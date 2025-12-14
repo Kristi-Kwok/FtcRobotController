@@ -1,0 +1,61 @@
+package org.firstinspires.ftc.teamcode;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
+@TeleOp(name = "kristiMecanum")
+public class kristiMecanum extends LinearOpMode {
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        DcMotor frontleft = hardwareMap.get(DcMotor.class, "frontleft");
+        DcMotor frontright = hardwareMap.get(DcMotor.class, "frontright");
+        DcMotor backleft = hardwareMap.get(DcMotor.class, "backleft");
+        DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
+        IMU imu = hardwareMap.get(IMU.class, "imu");
+
+        // You don't HAVE to do this, but it makes things clear
+        frontleft.setDirection(DcMotor.Direction.REVERSE);
+        frontright.setDirection(DcMotor.Direction.FORWARD);
+        backleft.setDirection(DcMotor.Direction.REVERSE);
+        backright.setDirection(DcMotor.Direction.FORWARD);
+
+        ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
+
+        IMU.Parameters parameters = new IMU.Parameters(orientation);
+        imu.initialize(parameters);
+
+        telemetry.addData("Status", "IMU Calibrating...");
+        telemetry.update();
+
+        imu.resetYaw();
+        waitForStart();
+
+        while (opModeIsActive()) {
+            double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+
+            telemetry.addData("Heading (Z)", heading);
+            telemetry.update();
+
+            frontleft.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+            frontright.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
+            backleft.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
+            backright.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+
+            frontleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+            frontright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+            backleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+            backright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+
+        }
+    }
+}
