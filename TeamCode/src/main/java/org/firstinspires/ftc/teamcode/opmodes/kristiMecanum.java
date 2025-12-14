@@ -56,6 +56,20 @@ public class kristiMecanum extends LinearOpMode {
             backleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
             backright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
 
+            if (gamepad1.dpad_left == true){
+                frontleft.setPower(1);
+                frontright.setPower(-1);
+                backleft.setPower(-1);
+                backright.setPower(1);
+            }
+
+            if (gamepad1.dpad_right == true){
+                frontleft.setPower(-1);
+                frontright.setPower(1);
+                backleft.setPower(1);
+                backright.setPower(-1);
+            }
+
         }
     }
 }
