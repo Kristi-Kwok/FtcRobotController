@@ -55,33 +55,24 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
+
+            double leftfrontPower = gamepad1.left_stick_y - gamepad1.left_stick_x - gamepad1.right_stick_x;
+            double rightfrontPower = gamepad1.left_stick_y + gamepad1.left_stick_x + gamepad1.right_stick_x;
+            double leftbackPower = gamepad1.left_stick_y + gamepad1.left_stick_x - gamepad1.right_stick_x;
+            double rightbackPower = gamepad1.left_stick_y - gamepad1.left_stick_x + gamepad1.right_stick_x;
+            frontleft.setPower(leftfrontPower);
+            frontright.setPower(rightfrontPower);
+            backleft.setPower(leftbackPower);
+            backright.setPower(rightbackPower);
+
+
             telemetry.addData("Heading (Z)", heading);
+
+            telemetry.addData("front left motor", leftfrontPower);
+            telemetry.addData("front right motor", rightfrontPower);
+            telemetry.addData("back left motor", leftbackPower);
+            telemetry.addData("back right motor", rightbackPower);
             telemetry.update();
-
-            frontleft.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
-            frontright.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
-            backleft.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
-            backright.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
-
-            frontleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
-            frontright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
-            backleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
-            backright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
-
-            if(gamepad1.right_bumper && flywheelVel < targetFlywheelVel) {
-
-                double motorSpeedTowardsTarget;
-
-                if (flywheelVel > (targetFlywheelVel / 2)) {
-                    double normalVel = flywheelVel / targetFlywheelVel;
-                    motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
-                    if(motorSpeedTowardsTarget < 0)
-                        motorSpeedTowardsTarget = 0;
-                } else {
-                    motorSpeedTowardsTarget = 1;
-                }
-                flywheel.setPower(motorSpeedTowardsTarget);
-            }
 
             if (gamepad1.dpad_left == true){
                 frontleft.setPower(1);
@@ -97,6 +88,47 @@ public class kristiMecanum extends LinearOpMode {
                 backright.setPower(-1);
             }
 
+            if(gamepad1.right_bumper){
+
+                double motorSpeedTowardsTarget;
+
+                if(flywheelVel < targetFlywheelVel) {
+                    if (flywheelVel > (targetFlywheelVel / 2)) {
+                        double normalVel = flywheelVel / targetFlywheelVel;
+                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                        if(motorSpeedTowardsTarget < 0)
+                            motorSpeedTowardsTarget = 0;
+                    } else {
+                        motorSpeedTowardsTarget = 1;
+                    }
+                    flywheel.setPower(motorSpeedTowardsTarget);
+                }
+                else {
+                    flywheel.setPower(0);
+                }
+
+
+                counter += 1;
+
+                if (counter == 200) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                }
+                if (counter == 275) {
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                }
+                if (counter == 325) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                    counter = 201;
+                }
+            } else {
+                counter = 0;
+                flywheel.setPower(0);
+                right_launch_servo.setPower(0);
+                left_launch_servo.setPower(0);
+            }
+        }
         }
     }
-}
