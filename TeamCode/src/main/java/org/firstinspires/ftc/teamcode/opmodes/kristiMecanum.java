@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
@@ -12,6 +14,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp(name = "kristiMecanum")
 public class kristiMecanum extends LinearOpMode {
+    int counter = 0;
+    double power = 1;
+    double flywheelVel = 0;
+    double targetFlywheelVel = 1500;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -19,6 +25,11 @@ public class kristiMecanum extends LinearOpMode {
         DcMotor frontright = hardwareMap.get(DcMotor.class, "frontright");
         DcMotor backleft = hardwareMap.get(DcMotor.class, "backleft");
         DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
+        DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        CRServo right_launch_servo = hardwareMap.get(CRServo.class, "rightServo");
+        CRServo left_launch_servo = hardwareMap.get(CRServo.class, "leftServo");
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
         // You don't HAVE to do this, but it makes things clear
@@ -42,6 +53,7 @@ public class kristiMecanum extends LinearOpMode {
 
         while (opModeIsActive()) {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            flywheelVel = flywheel.getVelocity();
 
             telemetry.addData("Heading (Z)", heading);
             telemetry.update();
@@ -55,6 +67,21 @@ public class kristiMecanum extends LinearOpMode {
             frontright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
             backleft.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
             backright.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+
+            if(gamepad1.right_bumper && flywheelVel < targetFlywheelVel) {
+
+                double motorSpeedTowardsTarget;
+
+                if (flywheelVel > (targetFlywheelVel / 2)) {
+                    double normalVel = flywheelVel / targetFlywheelVel;
+                    motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                    if(motorSpeedTowardsTarget < 0)
+                        motorSpeedTowardsTarget = 0;
+                } else {
+                    motorSpeedTowardsTarget = 1;
+                }
+                flywheel.setPower(motorSpeedTowardsTarget);
+            }
 
             if (gamepad1.dpad_left == true){
                 frontleft.setPower(1);
