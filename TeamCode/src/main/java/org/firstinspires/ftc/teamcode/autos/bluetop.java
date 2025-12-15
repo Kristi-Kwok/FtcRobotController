@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -16,7 +17,7 @@ public class bluetop extends LinearOpMode {
     int counter = 0;
     int counter_loop = 0;
     double flywheelVel = 0;
-    double targetFlywheelVel = 1500;
+    double targetFlywheelVel = 2000;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -47,6 +48,8 @@ public class bluetop extends LinearOpMode {
         telemetry.addData("Status", "IMU Calibrating...");
         telemetry.update();
 
+        ElapsedTime shootTimer = new ElapsedTime();
+
         boolean shooting = false;
 
         double power = 0.7;
@@ -54,15 +57,19 @@ public class bluetop extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()){
-            shooting = true;
 
-            if (shooting == true){
-                double motorSpeedTowardsTarget;
+            shooting = true;
+            shootTimer.reset();
+
+            while (shooting == true){
+                flywheelVel = flywheel.getVelocity();
+                double motorSpeedTowardsTarget = 0;
+
 
                 if(flywheelVel < targetFlywheelVel) {
                     if (flywheelVel > (targetFlywheelVel / 2)) {
                         double normalVel = flywheelVel / targetFlywheelVel;
-                        motorSpeedTowardsTarget = 1.3 - (2 * (normalVel - 0.5));
+                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
                         if(motorSpeedTowardsTarget < 0)
                             motorSpeedTowardsTarget = 0;
                     } else {
@@ -71,39 +78,49 @@ public class bluetop extends LinearOpMode {
                     flywheel.setPower(motorSpeedTowardsTarget);
                 } else {
                     flywheel.setPower(0);
+
                 }
 
-                counter += 1;
+                telemetry.addData("Timer", shootTimer.seconds());
+                telemetry.addData("Target Velocity", targetFlywheelVel);
+                telemetry.addData("Motor Speed", motorSpeedTowardsTarget);
+                telemetry.addData("Velocity of Motor", flywheelVel);
+                telemetry.update();
 
-                if (counter == 200) {
+                if (shootTimer.seconds() < 3 && shootTimer.seconds() > 2) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
                 }
-                if (counter == 275) {
+                if (shootTimer.seconds() < 5 && shootTimer.seconds() > 3) {
                     right_launch_servo.setPower(0);
                     left_launch_servo.setPower(0);
                 }
-                if (counter == 325) {
+                if (shootTimer.seconds() < 7 && shootTimer.seconds() > 6) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
-                    counter = 201;
                 }
-            } else {
-                counter = 0;
-                flywheel.setPower(0);
-                right_launch_servo.setPower(0);
-                left_launch_servo.setPower(0);
+                if (shootTimer.seconds() < 9 && shootTimer.seconds() > 7) {
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                }
+                if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+
+                }
+                if (shootTimer.seconds() > 13){
+                    shooting = false;
+                    flywheel.setPower(0);
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                }
+                sleep(1);
             }
-            frontleft.setPower(0);
-            frontright.setPower(0);
-            backleft.setPower(0);
-            backright.setPower(0);
-            sleep(10000);
             //backwards .5 seconds
-            frontleft.setPower(-.7);
-            frontright.setPower(-.7);
-            backleft.setPower(-.7);
-            backright.setPower(-.7);
+            frontleft.setPower(.7);
+            frontright.setPower(.7);
+            backleft.setPower(.7);
+            backright.setPower(.7);
             sleep(500);
             //straf right
             frontleft.setPower(-.7);
