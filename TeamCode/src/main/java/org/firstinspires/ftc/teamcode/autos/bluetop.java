@@ -14,22 +14,26 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Autonomous
 public class bluetop extends LinearOpMode {
-    int counter = 0;
-    int counter_loop = 0;
     double flywheelVel = 0;
     double targetFlywheelVel = 2000;
+    DcMotor frontleft;
+    DcMotor frontright;
+    DcMotor backleft;
+    DcMotor backright;
+    DcMotorEx flywheel;
+    CRServo right_launch_servo;
+    CRServo left_launch_servo;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor frontleft = hardwareMap.get(DcMotor.class, "frontleft");
-        DcMotor frontright = hardwareMap.get(DcMotor.class, "frontright");
-        DcMotor backleft = hardwareMap.get(DcMotor.class, "backleft");
-        DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
-        DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
+        frontright = hardwareMap.get(DcMotor.class, "frontright");
+        backleft = hardwareMap.get(DcMotor.class, "backleft");
+        backright = hardwareMap.get(DcMotor.class, "backright");
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        CRServo right_launch_servo = hardwareMap.get(CRServo.class, "rightServo");
-        CRServo left_launch_servo = hardwareMap.get(CRServo.class, "leftServo");
+        right_launch_servo = hardwareMap.get(CRServo.class, "rightServo");
+        left_launch_servo = hardwareMap.get(CRServo.class, "leftServo");
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
         //setting direction of each motor
@@ -122,7 +126,7 @@ public class bluetop extends LinearOpMode {
             backleft.setPower(.7);
             backright.setPower(.7);
             sleep(500);
-            //straf right
+            //strafe right
             frontleft.setPower(-.7);
             frontright.setPower(-.7);
             backleft.setPower(.7);
@@ -139,8 +143,48 @@ public class bluetop extends LinearOpMode {
             backright.setPower(0);
 
 
-//test
-
             }
         }
+        //Move in a certain direction for a certain amount of time
+        //Make sure x + y = 1
+        public void move(double x, double y, double time) throws InterruptedException {
+
+            double leftfrontPower = y-x;
+            double rightfrontPower = y+x;
+            double leftbackPower = y+x;
+            double rightbackPower = y-x;
+            frontleft.setPower(leftfrontPower);
+            frontright.setPower(rightfrontPower);
+            backleft.setPower(leftbackPower);
+            backright.setPower(rightbackPower);
+
+            sleep((long)time);
+
+            frontleft.setPower(0);
+            frontright.setPower(0);
+            backleft.setPower(0);
+            backright.setPower(0);
+
+        }
+
+        //rotate the robot
+        //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
+        public void rotate(int direction, double time) throws InterruptedException {
+            frontleft.setPower(1 * direction);
+            frontright.setPower(-1 * direction);
+            backleft.setPower(1 * direction);
+            backright.setPower(-1 * direction);
+
+            sleep((long)time);
+
+            frontleft.setPower(0);
+            frontright.setPower(0);
+            backleft.setPower(0);
+            backright.setPower(0);
+        }
+
+
     }
+
+
+
