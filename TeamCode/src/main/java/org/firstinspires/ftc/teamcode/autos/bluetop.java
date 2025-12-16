@@ -60,7 +60,6 @@ public class bluetop extends LinearOpMode {
         imu.resetYaw();
         waitForStart();
 
-        while (opModeIsActive()){
 
             shooting = true;
             shootTimer.reset();
@@ -107,7 +106,7 @@ public class bluetop extends LinearOpMode {
                     right_launch_servo.setPower(0);
                     left_launch_servo.setPower(0);
                 }
-                if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
+                if (shootTimer.seconds() < 10 && shootTimer.seconds() > 9) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
 
@@ -120,71 +119,56 @@ public class bluetop extends LinearOpMode {
                 }
                 sleep(1);
             }
-            //backwards .5 seconds
-            frontleft.setPower(.7);
-            frontright.setPower(.7);
-            backleft.setPower(.7);
-            backright.setPower(.7);
-            sleep(500);
-            //strafe right
-            frontleft.setPower(-.7);
-            frontright.setPower(-.7);
-            backleft.setPower(.7);
-            backright.setPower(.7);
-            sleep(600);
-            frontleft.setPower(-.7);
-            frontright.setPower(-.7);
-            backleft.setPower(.7);
-            backright.setPower(.7);
-            sleep(500);
-            frontleft.setPower(0);
-            frontright.setPower(0);
-            backleft.setPower(0);
-            backright.setPower(0);
+            move(0, 1, 3000);
+            sleep(3000);
+            move(1, 0, 3000);
+            sleep(3000);
+
 
 
             }
-        }
-        //Move in a certain direction for a certain amount of time
-        //Make sure x + y = 1
-        public void move(double x, double y, double time) throws InterruptedException {
+    //Move in a certain direction for a certain amount of time
+    //Make sure x + y = 1
+    public void move(double x, double y, double time) throws InterruptedException {
 
-            double leftfrontPower = y-x;
-            double rightfrontPower = y+x;
-            double leftbackPower = y+x;
-            double rightbackPower = y-x;
-            frontleft.setPower(leftfrontPower);
-            frontright.setPower(rightfrontPower);
-            backleft.setPower(leftbackPower);
-            backright.setPower(rightbackPower);
+        double leftfrontPower = y-x;
+        double rightfrontPower = y+x;
+        double leftbackPower = y+x;
+        double rightbackPower = y-x;
+        frontleft.setPower(leftfrontPower);
+        frontright.setPower(rightfrontPower);
+        backleft.setPower(leftbackPower);
+        backright.setPower(rightbackPower);
 
-            sleep((long)time);
+        sleep((long)time);
 
-            frontleft.setPower(0);
-            frontright.setPower(0);
-            backleft.setPower(0);
-            backright.setPower(0);
-
-        }
-
-        //rotate the robot
-        //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
-        public void rotate(int direction, double time) throws InterruptedException {
-            frontleft.setPower(1 * direction);
-            frontright.setPower(-1 * direction);
-            backleft.setPower(1 * direction);
-            backright.setPower(-1 * direction);
-
-            sleep((long)time);
-
-            frontleft.setPower(0);
-            frontright.setPower(0);
-            backleft.setPower(0);
-            backright.setPower(0);
-        }
-
+        frontleft.setPower(0);
+        frontright.setPower(0);
+        backleft.setPower(0);
+        backright.setPower(0);
 
     }
+
+    //rotate the robot
+    //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
+    public void rotate(int direction, double time) throws InterruptedException {
+        frontleft.setPower(1 * direction);
+        frontright.setPower(-1 * direction);
+        backleft.setPower(1 * direction);
+        backright.setPower(-1 * direction);
+
+        sleep((long)time);
+
+        frontleft.setPower(0);
+        frontright.setPower(0);
+        backleft.setPower(0);
+        backright.setPower(0);
+    }
+        }
+
+
+
+
 
 
 
