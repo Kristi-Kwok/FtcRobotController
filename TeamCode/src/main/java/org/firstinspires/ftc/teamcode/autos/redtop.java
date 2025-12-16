@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Autonomous
-public class bluebottom extends LinearOpMode {
+public class redtop extends LinearOpMode {
     double flywheelVel = 0;
     double targetFlywheelVel = 2000;
     DcMotor frontleft;
@@ -23,9 +23,6 @@ public class bluebottom extends LinearOpMode {
     DcMotorEx flywheel;
     CRServo right_launch_servo;
     CRServo left_launch_servo;
-    ElapsedTime shootTimer = new ElapsedTime();
-
-    boolean shooting = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -55,71 +52,14 @@ public class bluebottom extends LinearOpMode {
         telemetry.addData("Status", "IMU Calibrating...");
         telemetry.update();
 
+        ElapsedTime shootTimer = new ElapsedTime();
+
+        boolean shooting = false;
 
         double power = 0.7;
         imu.resetYaw();
         waitForStart();
 
-
-        move(0,1,900);
-        sleep(900);
-        rotate(-1, 80);
-        sleep(80);
-        move(0,1,500);
-        sleep(500);
-        shoot();
-        sleep(13000);
-        move(0, 1, 200);
-        sleep(200);
-        move(1, 0, 300);
-        sleep(300);
-    }
-    //Move in a certain direction for a certain amount of time
-    //Make sure x + y = 1
-    public void move(double x, double y, long time) throws InterruptedException {
-
-        y = -y;
-        x= -x;
-
-        double power = 0.75;
-        time *= (1/power);
-
-        double leftfrontPower = (y-x) * power;
-        double rightfrontPower = (y+x) * power;
-        double leftbackPower = (y+x) * power;
-        double rightbackPower = (y-x) * power;
-        frontleft.setPower(leftfrontPower);
-        frontright.setPower(rightfrontPower);
-        backleft.setPower(leftbackPower);
-        backright.setPower(rightbackPower);
-
-        sleep(time);
-
-        frontleft.setPower(0);
-        frontright.setPower(0);
-        backleft.setPower(0);
-        backright.setPower(0);
-
-    }
-
-    //rotate the robot
-    //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
-    public void rotate(int direction, long time) throws InterruptedException {
-        frontleft.setPower(1 * direction);
-        frontright.setPower(-1 * direction);
-        backleft.setPower(1 * direction);
-        backright.setPower(-1 * direction);
-
-        sleep(time);
-
-        frontleft.setPower(0);
-        frontright.setPower(0);
-        backleft.setPower(0);
-        backright.setPower(0);
-    }
-
-    //wait 13 seconds after calling the function
-    public void shoot(){
 
         shooting = true;
         shootTimer.reset();
@@ -166,7 +106,7 @@ public class bluebottom extends LinearOpMode {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
+            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 9) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
 
@@ -179,8 +119,55 @@ public class bluebottom extends LinearOpMode {
             }
             sleep(1);
         }
+        move(0, 1, 3000);
+        sleep(3000);
+        move(1, 0, 3000);
+        sleep(3000);
+
+
+
+    }
+    //Move in a certain direction for a certain amount of time
+    //Make sure x + y = 1
+    public void move(double x, double y, double time) throws InterruptedException {
+
+        double leftfrontPower = y-x;
+        double rightfrontPower = y+x;
+        double leftbackPower = y+x;
+        double rightbackPower = y-x;
+        frontleft.setPower(leftfrontPower);
+        frontright.setPower(rightfrontPower);
+        backleft.setPower(leftbackPower);
+        backright.setPower(rightbackPower);
+
+        sleep((long)time);
+
+        frontleft.setPower(0);
+        frontright.setPower(0);
+        backleft.setPower(0);
+        backright.setPower(0);
+
+    }
+
+    //rotate the robot
+    //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
+    public void rotate(int direction, double time) throws InterruptedException {
+        frontleft.setPower(1 * direction);
+        frontright.setPower(-1 * direction);
+        backleft.setPower(1 * direction);
+        backright.setPower(-1 * direction);
+
+        sleep((long)time);
+
+        frontleft.setPower(0);
+        frontright.setPower(0);
+        backleft.setPower(0);
+        backright.setPower(0);
     }
 }
+
+
+
 
 
 

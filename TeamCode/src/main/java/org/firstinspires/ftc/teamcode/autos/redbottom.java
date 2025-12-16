@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Autonomous
-public class bluebottom extends LinearOpMode {
+public class redbottom extends LinearOpMode {
     double flywheelVel = 0;
     double targetFlywheelVel = 2000;
     DcMotor frontleft;
@@ -69,7 +69,7 @@ public class bluebottom extends LinearOpMode {
         sleep(500);
         shoot();
         sleep(13000);
-        move(0, 1, 200);
+        move(0, -1, 200);
         sleep(200);
         move(1, 0, 300);
         sleep(300);
