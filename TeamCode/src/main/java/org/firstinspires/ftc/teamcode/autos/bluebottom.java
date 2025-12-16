@@ -69,6 +69,10 @@ public class bluebottom extends LinearOpMode {
         sleep(500);
         shoot();
         sleep(13000);
+        move(0, -1, 200);
+        sleep(200);
+        move(1, 0, 300);
+        sleep(300);
     }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1
@@ -77,12 +81,13 @@ public class bluebottom extends LinearOpMode {
         y = -y;
         x= -x;
 
+        double power = 0.75;
+        time *= (1/power);
 
-
-        double leftfrontPower = y-x;
-        double rightfrontPower = y+x;
-        double leftbackPower = y+x;
-        double rightbackPower = y-x;
+        double leftfrontPower = (y-x) * power;
+        double rightfrontPower = (y+x) * power;
+        double leftbackPower = (y+x) * power;
+        double rightbackPower = (y-x) * power;
         frontleft.setPower(leftfrontPower);
         frontright.setPower(rightfrontPower);
         backleft.setPower(leftbackPower);
