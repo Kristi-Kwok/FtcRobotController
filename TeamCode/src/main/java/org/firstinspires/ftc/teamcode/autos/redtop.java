@@ -98,15 +98,15 @@ public class redtop extends LinearOpMode {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 7 && shootTimer.seconds() > 6) {
+            if (shootTimer.seconds() < 8 && shootTimer.seconds() > 7) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
             }
-            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 7) {
+            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 9) {
+            if (shootTimer.seconds() < 12 && shootTimer.seconds() > 10) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
 
@@ -119,10 +119,10 @@ public class redtop extends LinearOpMode {
             }
             sleep(1);
         }
-        move(0, 1, 3000);
-        sleep(3000);
-        move(1, 0, 3000);
-        sleep(3000);
+        move(0, 1, 200);
+        sleep(200);
+        move(-1, 0, 300);
+        sleep(300);
 
 
 

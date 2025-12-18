@@ -122,7 +122,7 @@ public class bluetop extends LinearOpMode {
             move(0, 1, 200);
             sleep(200);
             move(1, 0, 300);
-            sleep(3o00);
+            sleep(300);
 
 
 
