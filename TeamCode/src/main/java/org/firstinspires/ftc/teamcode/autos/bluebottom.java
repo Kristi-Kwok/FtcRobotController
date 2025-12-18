@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 @Autonomous
 public class bluebottom extends LinearOpMode {
     double flywheelVel = 0;
-    double targetFlywheelVel = 2000;
+    double targetFlywheelVel = 1600;
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
@@ -61,27 +61,24 @@ public class bluebottom extends LinearOpMode {
         waitForStart();
 
 
-        move(0,1,900);
-        sleep(900);
-        rotate(-1, 80);
-        sleep(80);
-        move(0,1,500);
+        move(0,1,1100, 0.75);
+        sleep(1100);
+        rotate(1, 70);
+        sleep(70);
+        move(0,1,500, 0.4);
         sleep(500);
         shoot();
-        sleep(13000);
-        move(0, 1, 200);
+        move(0, -1, 200, 0.75);
         sleep(200);
-        move(1, 0, 300);
+        move(1, 0, 300, 0.75);
         sleep(300);
     }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1
-    public void move(double x, double y, long time) throws InterruptedException {
+    public void move(double x, double y, long time, double power) throws InterruptedException {
 
         y = -y;
         x= -x;
-
-        double power = 0.75;
         time *= (1/power);
 
         double leftfrontPower = (y-x) * power;
