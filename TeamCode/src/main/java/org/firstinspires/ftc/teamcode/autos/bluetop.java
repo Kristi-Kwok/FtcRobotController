@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 @Autonomous
 public class bluetop extends LinearOpMode {
     double flywheelVel = 0;
-    double targetFlywheelVel = 2000;
+    double targetFlywheelVel = 1600;
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;

@@ -70,7 +70,7 @@ public class redbottom extends LinearOpMode {
         shoot();
         move(0, -1, 200, 0.75);
         sleep(200);
-        move(-1, 0, 300, 0.75);
+        move(1, 0, 300, 0.75);
         sleep(300);
     }
     //Move in a certain direction for a certain amount of time
