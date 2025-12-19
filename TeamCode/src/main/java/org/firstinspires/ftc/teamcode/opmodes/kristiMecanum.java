@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -17,7 +18,10 @@ public class kristiMecanum extends LinearOpMode {
     int counter = 0;
     double power = 1;
     double flywheelVel = 0;
-    double targetFlywheelVel = 1500;
+    double targetFlywheelVel = 1670;
+    ElapsedTime shootTimer = new ElapsedTime();
+    boolean shooting = false;
+    double offset = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -38,6 +42,13 @@ public class kristiMecanum extends LinearOpMode {
         backleft.setDirection(DcMotor.Direction.REVERSE);
         backright.setDirection(DcMotor.Direction.FORWARD);
 
+        //Make the motors brake whenever their power is zero
+        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
@@ -51,7 +62,14 @@ public class kristiMecanum extends LinearOpMode {
         imu.resetYaw();
         waitForStart();
 
+
         while (opModeIsActive()) {
+
+            if(!shooting){
+                shootTimer.reset();
+                shooting = true;
+            }
+
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
@@ -74,18 +92,10 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("back right motor", rightbackPower);
             telemetry.update();
 
-            if (gamepad1.dpad_left == true){
-                frontleft.setPower(1);
-                frontright.setPower(-1);
-                backleft.setPower(-1);
-                backright.setPower(1);
-            }
-
-            if (gamepad1.dpad_right == true){
-                frontleft.setPower(-1);
-                frontright.setPower(1);
-                backleft.setPower(1);
-                backright.setPower(-1);
+            if(gamepad1.left_bumper){
+                targetFlywheelVel = 2000;
+            }else{
+                targetFlywheelVel = 1650;
             }
 
             if(gamepad1.right_bumper){
@@ -95,7 +105,7 @@ public class kristiMecanum extends LinearOpMode {
                 if(flywheelVel < targetFlywheelVel) {
                     if (flywheelVel > (targetFlywheelVel / 2)) {
                         double normalVel = flywheelVel / targetFlywheelVel;
-                        motorSpeedTowardsTarget = 1.3 - (2 * (normalVel - 0.5));
+                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
                         if(motorSpeedTowardsTarget < 0)
                             motorSpeedTowardsTarget = 0;
                     } else {
@@ -114,11 +124,11 @@ public class kristiMecanum extends LinearOpMode {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
                 }
-                if (counter == 275) {
+                if (counter == 215) {
                     right_launch_servo.setPower(0);
                     left_launch_servo.setPower(0);
                 }
-                if (counter == 325) {
+                if (counter == 300) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
                     counter = 201;
@@ -129,6 +139,7 @@ public class kristiMecanum extends LinearOpMode {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-        }
+
         }
     }
+}
