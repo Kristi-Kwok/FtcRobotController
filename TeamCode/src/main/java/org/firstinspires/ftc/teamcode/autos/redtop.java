@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 @Autonomous
 public class redtop extends LinearOpMode {
     double flywheelVel = 0;
-    double targetFlywheelVel = 2000;
+    double targetFlywheelVel = 1600;
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
@@ -98,20 +98,20 @@ public class redtop extends LinearOpMode {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 8 && shootTimer.seconds() > 7) {
+            if (shootTimer.seconds() < 6.2 && shootTimer.seconds() > 6) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
             }
-            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
+            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 6.2) {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 12 && shootTimer.seconds() > 10) {
+            if (shootTimer.seconds() < 9.5 && shootTimer.seconds() > 9) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
 
             }
-            if (shootTimer.seconds() > 13){
+            if (shootTimer.seconds() > 9.5){
                 shooting = false;
                 flywheel.setPower(0);
                 right_launch_servo.setPower(0);
@@ -119,8 +119,10 @@ public class redtop extends LinearOpMode {
             }
             sleep(1);
         }
-        move(0, 1, 200);
-        sleep(200);
+        sleep(300);
+
+        move(0, 1, 175);
+        sleep(175);
         move(-1, 0, 300);
         sleep(300);
 

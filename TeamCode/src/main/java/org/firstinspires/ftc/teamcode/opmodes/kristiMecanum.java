@@ -22,6 +22,8 @@ public class kristiMecanum extends LinearOpMode {
     ElapsedTime shootTimer = new ElapsedTime();
     boolean shooting = false;
     double offset = 0;
+    int sortAmt = 0;
+    int sortCounter = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -90,17 +92,24 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("front right motor", rightfrontPower);
             telemetry.addData("back left motor", leftbackPower);
             telemetry.addData("back right motor", rightbackPower);
+            telemetry.addData("Sort Que:", sortAmt);
             telemetry.update();
 
             if(gamepad1.left_bumper){
                 targetFlywheelVel = 2000;
             }else{
-                targetFlywheelVel = 1650;
+                targetFlywheelVel = 1600;
+                //435 for sorting
+            }
+
+            if(gamepad1.xWasPressed()){
+                sortAmt += 1;
             }
 
             if(gamepad1.right_bumper){
 
                 double motorSpeedTowardsTarget;
+                targetFlywheelVel = 1650;
 
                 if(flywheelVel < targetFlywheelVel) {
                     if (flywheelVel > (targetFlywheelVel / 2)) {
@@ -133,8 +142,44 @@ public class kristiMecanum extends LinearOpMode {
                     left_launch_servo.setPower(1);
                     counter = 201;
                 }
-            } else {
+            } else if(sortAmt > 0){ //sorting system
+                //flywheel.setVelocity(800);
+                targetFlywheelVel = 445;
+                double motorSpeedTowardsTarget;
+
+                if(flywheelVel < targetFlywheelVel) {
+                    if (flywheelVel > (targetFlywheelVel / 2)) {
+                        double normalVel = flywheelVel / targetFlywheelVel;
+                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                        if(motorSpeedTowardsTarget < 0)
+                            motorSpeedTowardsTarget = 0;
+                    } else {
+                        motorSpeedTowardsTarget = 1;
+                    }
+                    flywheel.setPower(motorSpeedTowardsTarget);
+                }
+                else {
+                    flywheel.setPower(0);
+                }
+
+                sortCounter += 1;
+
+                if (sortCounter == 200) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                }
+                if (sortCounter == 215) {
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                }
+                if (sortCounter == 300) {
+                    sortCounter = 199;
+                    sortAmt -= 1;
+                }
+
+            }else {
                 counter = 0;
+                sortCounter = 0;
                 flywheel.setPower(0);
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);

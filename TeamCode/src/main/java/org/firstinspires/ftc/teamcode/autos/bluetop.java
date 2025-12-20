@@ -61,72 +61,72 @@ public class bluetop extends LinearOpMode {
         waitForStart();
 
 
-            shooting = true;
-            shootTimer.reset();
+        shooting = true;
+        shootTimer.reset();
 
-            while (shooting == true){
-                flywheelVel = flywheel.getVelocity();
-                double motorSpeedTowardsTarget = 0;
+        while (shooting == true){
+            flywheelVel = flywheel.getVelocity();
+            double motorSpeedTowardsTarget = 0;
 
 
-                if(flywheelVel < targetFlywheelVel) {
-                    if (flywheelVel > (targetFlywheelVel / 2)) {
-                        double normalVel = flywheelVel / targetFlywheelVel;
-                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
-                        if(motorSpeedTowardsTarget < 0)
-                            motorSpeedTowardsTarget = 0;
-                    } else {
-                        motorSpeedTowardsTarget = 1;
-                    }
-                    flywheel.setPower(motorSpeedTowardsTarget);
+            if(flywheelVel < targetFlywheelVel) {
+                if (flywheelVel > (targetFlywheelVel / 2)) {
+                    double normalVel = flywheelVel / targetFlywheelVel;
+                    motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                    if(motorSpeedTowardsTarget < 0)
+                        motorSpeedTowardsTarget = 0;
                 } else {
-                    flywheel.setPower(0);
-
+                    motorSpeedTowardsTarget = 1;
                 }
-
-                telemetry.addData("Timer", shootTimer.seconds());
-                telemetry.addData("Target Velocity", targetFlywheelVel);
-                telemetry.addData("Motor Speed", motorSpeedTowardsTarget);
-                telemetry.addData("Velocity of Motor", flywheelVel);
-                telemetry.update();
-
-                if (shootTimer.seconds() < 3 && shootTimer.seconds() > 2) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                }
-                if (shootTimer.seconds() < 5 && shootTimer.seconds() > 3) {
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                }
-                if (shootTimer.seconds() < 8 && shootTimer.seconds() > 7) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                }
-                if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                }
-                if (shootTimer.seconds() < 12 && shootTimer.seconds() > 10) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-
-                }
-                if (shootTimer.seconds() > 13){
-                    shooting = false;
-                    flywheel.setPower(0);
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                }
-                sleep(1);
-            }
-            move(0, 1, 200);
-            sleep(200);
-            move(1, 0, 300);
-            sleep(300);
-
-
+                flywheel.setPower(motorSpeedTowardsTarget);
+            } else {
+                flywheel.setPower(0);
 
             }
+
+            telemetry.addData("Timer", shootTimer.seconds());
+            telemetry.addData("Target Velocity", targetFlywheelVel);
+            telemetry.addData("Motor Speed", motorSpeedTowardsTarget);
+            telemetry.addData("Velocity of Motor", flywheelVel);
+            telemetry.update();
+
+            if (shootTimer.seconds() < 3 && shootTimer.seconds() > 2) {
+                right_launch_servo.setPower(-1);
+                left_launch_servo.setPower(1);
+            }
+            if (shootTimer.seconds() < 5 && shootTimer.seconds() > 3) {
+                right_launch_servo.setPower(0);
+                left_launch_servo.setPower(0);
+            }
+            if (shootTimer.seconds() < 6.3 && shootTimer.seconds() > 6) {
+                right_launch_servo.setPower(-1);
+                left_launch_servo.setPower(1);
+            }
+            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 6.3) {
+                right_launch_servo.setPower(0);
+                left_launch_servo.setPower(0);
+            }
+            if (shootTimer.seconds() < 9.5 && shootTimer.seconds() > 9) {
+                right_launch_servo.setPower(-1);
+                left_launch_servo.setPower(1);
+
+            }
+            if (shootTimer.seconds() > 9.5){
+                shooting = false;
+                flywheel.setPower(0);
+                right_launch_servo.setPower(0);
+                left_launch_servo.setPower(0);
+            }
+            sleep(1);
+        }
+        sleep(300);
+        move(0, 1, 175);
+        sleep(175);
+        move(1, 0, 300);
+        sleep(300);
+
+
+    }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1
     public void move(double x, double y, double time) throws InterruptedException {

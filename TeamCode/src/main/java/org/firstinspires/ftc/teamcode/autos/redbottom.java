@@ -68,8 +68,9 @@ public class redbottom extends LinearOpMode {
         move(0,1,500, 0.4);
         sleep(500);
         shoot();
-        move(0, -1, 200, 0.75);
-        sleep(200);
+        sleep(300);
+        move(0, -1, 175, 0.75);
+        sleep(175);
         move(1, 0, 300, 0.75);
         sleep(300);
     }
@@ -155,26 +156,27 @@ public class redbottom extends LinearOpMode {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 7 && shootTimer.seconds() > 6) {
+            if (shootTimer.seconds() < 6.2 && shootTimer.seconds() > 6) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
             }
-            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 7) {
+            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 6.2) {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 10 && shootTimer.seconds() > 8) {
+            if (shootTimer.seconds() < 9.5 && shootTimer.seconds() > 9) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
 
             }
-            if (shootTimer.seconds() > 13){
+            if (shootTimer.seconds() > 9.5){
                 shooting = false;
                 flywheel.setPower(0);
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
             sleep(1);
+
         }
     }
 }
