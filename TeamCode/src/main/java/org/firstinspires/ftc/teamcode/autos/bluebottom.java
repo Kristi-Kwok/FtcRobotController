@@ -63,10 +63,10 @@ public class bluebottom extends LinearOpMode {
 
         move(0,1,1070, 0.75);
         sleep(1070);
-        rotate(1, 105);
-        sleep(105);
-        move(0,1,500, 0.4);
-        sleep(500);
+        rotate(1, 140);
+        sleep(140);
+        move(0,1,600, 0.4);
+        sleep(600);
         shoot();
         sleep(300);
         move(0, -1, 175, 0.75);

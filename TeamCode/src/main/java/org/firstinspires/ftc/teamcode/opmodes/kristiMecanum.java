@@ -106,10 +106,49 @@ public class kristiMecanum extends LinearOpMode {
                 sortAmt += 1;
             }
 
-            if(gamepad1.right_bumper){
+            if(gamepad1.b) {
+                flywheel.setPower(-0.4);
+                right_launch_servo.setPower(1);
+                left_launch_servo.setPower(-1);
+            }else if(gamepad1.right_bumper){
 
+                    double motorSpeedTowardsTarget;
+                    targetFlywheelVel = 1650;
+
+                    if(flywheelVel < targetFlywheelVel) {
+                        if (flywheelVel > (targetFlywheelVel / 2)) {
+                            double normalVel = flywheelVel / targetFlywheelVel;
+                            motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                            if(motorSpeedTowardsTarget < 0)
+                                motorSpeedTowardsTarget = 0;
+                        } else {
+                            motorSpeedTowardsTarget = 1;
+                        }
+                        flywheel.setPower(motorSpeedTowardsTarget);
+                    }
+                    else {
+                        flywheel.setPower(0);
+                    }
+
+
+                    counter += 1;
+
+                    if (counter == 200) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    if (counter == 215) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                    }
+                    if (counter == 300) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 201;
+                    }
+                } else if(sortAmt > 0){ //sorting system
                 double motorSpeedTowardsTarget;
-                targetFlywheelVel = 1650;
+                targetFlywheelVel = 525;
 
                 if(flywheelVel < targetFlywheelVel) {
                     if (flywheelVel > (targetFlywheelVel / 2)) {
@@ -127,64 +166,29 @@ public class kristiMecanum extends LinearOpMode {
                 }
 
 
-                counter += 1;
+                    sortCounter += 1;
 
-                if (counter == 200) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                }
-                if (counter == 215) {
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                }
-                if (counter == 300) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                    counter = 201;
-                }
-            } else if(sortAmt > 0){ //sorting system
-                //flywheel.setVelocity(800);
-                targetFlywheelVel = 445;
-                double motorSpeedTowardsTarget;
-
-                if(flywheelVel < targetFlywheelVel) {
-                    if (flywheelVel > (targetFlywheelVel / 2)) {
-                        double normalVel = flywheelVel / targetFlywheelVel;
-                        motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
-                        if(motorSpeedTowardsTarget < 0)
-                            motorSpeedTowardsTarget = 0;
-                    } else {
-                        motorSpeedTowardsTarget = 1;
+                    if (sortCounter == 200) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
                     }
-                    flywheel.setPower(motorSpeedTowardsTarget);
-                }
-                else {
+                    if (sortCounter == 215) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                    }
+                    if (sortCounter == 300) {
+                        sortCounter = 180;
+                        sortAmt -= 1;
+                    }
+
+                }else {
+                    counter = 0;
+                    sortCounter = 0;
                     flywheel.setPower(0);
-                }
-
-                sortCounter += 1;
-
-                if (sortCounter == 200) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                }
-                if (sortCounter == 215) {
                     right_launch_servo.setPower(0);
                     left_launch_servo.setPower(0);
                 }
-                if (sortCounter == 300) {
-                    sortCounter = 199;
-                    sortAmt -= 1;
-                }
-
-            }else {
-                counter = 0;
-                sortCounter = 0;
-                flywheel.setPower(0);
-                right_launch_servo.setPower(0);
-                left_launch_servo.setPower(0);
             }
 
         }
     }
-}
