@@ -18,7 +18,7 @@ public class kristiMecanum extends LinearOpMode {
     int counter = 0;
     double power = 1;
     double flywheelVel = 0;
-    double targetFlywheelVel = 1670;
+    double targetFlywheelVel = 1700;
     ElapsedTime shootTimer = new ElapsedTime();
     boolean shooting = false;
     double offset = 0;
