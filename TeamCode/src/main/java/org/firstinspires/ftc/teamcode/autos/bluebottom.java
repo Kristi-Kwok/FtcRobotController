@@ -61,12 +61,12 @@ public class bluebottom extends LinearOpMode {
         waitForStart();
 
 
-        move(0,1,1070, 0.75);
+        move(0,1,1050, .5);
         sleep(1070);
-        rotate(1, 140);
+        rotate(-1, 70);
         sleep(140);
-        move(0,1,600, 0.4);
-        sleep(600);
+        move(0,1,550, 0.4);
+        sleep(550);
         shoot();
         sleep(300);
         move(0, -1, 175, 0.75);
@@ -78,8 +78,6 @@ public class bluebottom extends LinearOpMode {
     //Make sure x + y = 1
     public void move(double x, double y, long time, double power) throws InterruptedException {
 
-        y = -y;
-        x= -x;
         time *= (1/power);
 
         double leftfrontPower = (y-x) * power;

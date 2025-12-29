@@ -120,7 +120,7 @@ public class bluetop extends LinearOpMode {
             sleep(1);
         }
         sleep(300);
-        move(0, 1, 175);
+        move(0, -1, 150);
         sleep(175);
         move(1, 0, 300);
         sleep(300);
@@ -131,10 +131,10 @@ public class bluetop extends LinearOpMode {
     //Make sure x + y = 1
     public void move(double x, double y, double time) throws InterruptedException {
 
-        double leftfrontPower = y-x;
-        double rightfrontPower = y+x;
-        double leftbackPower = y+x;
-        double rightbackPower = y-x;
+        double leftfrontPower = y+x;
+        double rightfrontPower = y-x;
+        double leftbackPower = y-x;
+        double rightbackPower = y+x;
         frontleft.setPower(leftfrontPower);
         frontright.setPower(rightfrontPower);
         backleft.setPower(leftbackPower);

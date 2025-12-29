@@ -39,10 +39,10 @@ public class kristiMecanum extends LinearOpMode {
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
         // You don't HAVE to do this, but it makes things clear
-        frontleft.setDirection(DcMotor.Direction.REVERSE);
-        frontright.setDirection(DcMotor.Direction.FORWARD);
-        backleft.setDirection(DcMotor.Direction.REVERSE);
-        backright.setDirection(DcMotor.Direction.FORWARD);
+        frontleft.setDirection(DcMotor.Direction.FORWARD);
+        frontright.setDirection(DcMotor.Direction.REVERSE);
+        backleft.setDirection(DcMotor.Direction.FORWARD);
+        backright.setDirection(DcMotor.Direction.REVERSE);
 
         //Make the motors brake whenever their power is zero
         frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -111,9 +111,11 @@ public class kristiMecanum extends LinearOpMode {
                 right_launch_servo.setPower(1);
                 left_launch_servo.setPower(-1);
             }else if(gamepad1.right_bumper){
-
-                    double motorSpeedTowardsTarget;
-                    targetFlywheelVel = 1650;
+                double motorSpeedTowardsTarget;
+                targetFlywheelVel = 1650;
+                if(gamepad1.left_bumper){
+                    targetFlywheelVel = 2600;
+                }
 
                     if(flywheelVel < targetFlywheelVel) {
                         if (flywheelVel > (targetFlywheelVel / 2)) {

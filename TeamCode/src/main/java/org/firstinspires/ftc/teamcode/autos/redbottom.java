@@ -61,9 +61,9 @@ public class redbottom extends LinearOpMode {
         waitForStart();
 
 
-        move(0,1,1100, 0.75);
+        move(0,1,800, 0.5);
         sleep(1100);
-        rotate(-1, 70);
+        rotate(1, 70);
         sleep(70);
         move(0,1,500, 0.4);
         sleep(500);
@@ -78,8 +78,6 @@ public class redbottom extends LinearOpMode {
     //Make sure x + y = 1
     public void move(double x, double y, long time, double power) throws InterruptedException {
 
-        y = -y;
-        x= -x;
         time *= (1/power);
 
         double leftfrontPower = (y-x) * power;

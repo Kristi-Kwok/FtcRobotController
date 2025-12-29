@@ -121,9 +121,9 @@ public class redtop extends LinearOpMode {
         }
         sleep(300);
 
-        move(0, 1, 175);
+        move(0, -1, 175);
         sleep(175);
-        move(-1, 0, 300);
+        move(1, 0, 300);
         sleep(300);
 
 
