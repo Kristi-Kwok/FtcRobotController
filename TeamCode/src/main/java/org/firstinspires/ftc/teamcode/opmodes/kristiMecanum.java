@@ -24,6 +24,7 @@ public class kristiMecanum extends LinearOpMode {
     double offset = 0;
     int sortAmt = 0;
     int sortCounter = 0;
+    double rotOffset = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -75,11 +76,75 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
+            double x = gamepad1.left_stick_x;
+            double y = gamepad1.left_stick_y;
+            double rot = gamepad1.right_stick_x;
 
-            double leftfrontPower = gamepad1.left_stick_y - gamepad1.left_stick_x - gamepad1.right_stick_x;
-            double rightfrontPower = gamepad1.left_stick_y + gamepad1.left_stick_x + gamepad1.right_stick_x;
-            double leftbackPower = gamepad1.left_stick_y + gamepad1.left_stick_x - gamepad1.right_stick_x;
-            double rightbackPower = gamepad1.left_stick_y - gamepad1.left_stick_x + gamepad1.right_stick_x;
+            //field centric code
+
+            double weight = 0;
+            int xPolarity = 0;
+            int yPolarityX = 0;
+            int yPolarity = 0;
+            int xPolarityY = 0;
+
+            //change data from IMU so 0 degrees is forward
+            double curDirection = heading + rotOffset;
+
+            if(curDirection > 180){
+                curDirection -= 360;
+            }else if(curDirection < -180){
+                curDirection += 360;
+            }
+
+            //use direction to "rotate" movement inputs
+            if(0 <= curDirection && curDirection <= 90){
+                xPolarity = 1;
+                yPolarity = 1;
+                xPolarityY = 1;
+                yPolarityX = -1;
+
+                weight = 1 - (curDirection / 90);
+            }else if(90 <= curDirection && curDirection <= 180){
+                xPolarity = -1;
+                yPolarity = -1;
+                xPolarityY = 1;
+                yPolarityX = -1;
+
+                weight = ((curDirection - 90) / 90);
+            }else if(-90 <= curDirection && curDirection <= 0){
+                xPolarity = 1;
+                yPolarity = 1;
+                xPolarityY = -1;
+                yPolarityX = 1;
+
+                weight = 1 - ((curDirection*-1) / 90);
+            }else if(-180 <= curDirection && curDirection <= -90){
+                xPolarity = -1;
+                yPolarity = -1;
+                xPolarityY = -1;
+                yPolarityX = 1;
+
+                weight = (((curDirection*-1)-90) / 90);
+            }
+
+
+            double oldX = x;
+
+            x = (x * weight * xPolarity) + (y * (1 - weight) * yPolarityX);
+            y = (y * weight * yPolarity) + (oldX * (1 - weight) * xPolarityY);
+
+            double normalizeVector = 1 / (Math.abs(x) + Math.abs(y));
+
+            x *= normalizeVector;
+            y *= normalizeVector;
+
+            //assign power to motors
+
+            double leftfrontPower = y - x - rot;
+            double rightfrontPower = y + x + rot;
+            double leftbackPower = y + x - rot;
+            double rightbackPower = y - x + rot;
             frontleft.setPower(leftfrontPower);
             frontright.setPower(rightfrontPower);
             backleft.setPower(leftbackPower);
@@ -94,13 +159,6 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("back right motor", rightbackPower);
             telemetry.addData("Sort Que:", sortAmt);
             telemetry.update();
-
-            if(gamepad1.left_bumper){
-                targetFlywheelVel = 2000;
-            }else{
-                targetFlywheelVel = 1600;
-                //435 for sorting
-            }
 
             if(gamepad1.xWasPressed()){
                 sortAmt += 1;
