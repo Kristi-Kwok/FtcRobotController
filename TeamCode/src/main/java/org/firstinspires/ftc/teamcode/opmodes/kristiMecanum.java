@@ -26,6 +26,8 @@ public class kristiMecanum extends LinearOpMode {
     int sortCounter = 0;
     double rotOffset = 0;
 
+    double moveSpeed = 1;
+
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotor frontleft = hardwareMap.get(DcMotor.class, "frontleft");
@@ -80,11 +82,21 @@ public class kristiMecanum extends LinearOpMode {
                 imu.resetYaw();
             }
 
+
+            if(gamepad1.yWasPressed()){
+                if(moveSpeed == 1){
+                    moveSpeed = 0.2;
+                } else{
+                    moveSpeed = 1;
+                }
+            }
+
+
             double x = gamepad1.left_stick_x;
             double y = gamepad1.left_stick_y;
             double rot = gamepad1.right_stick_x;
 
-            double moveAmnt = (Math.abs(x) + Math.abs(y));
+            double moveAmnt = (Math.abs(x) + Math.abs(y)) * moveSpeed;
 
             //field centric code
 
