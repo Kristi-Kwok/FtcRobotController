@@ -80,6 +80,8 @@ public class kristiMecanum extends LinearOpMode {
             double y = gamepad1.left_stick_y;
             double rot = gamepad1.right_stick_x;
 
+            double moveAmnt = (Math.abs(x) + Math.abs(y));
+
             //field centric code
 
             double weight = 0;
@@ -139,12 +141,25 @@ public class kristiMecanum extends LinearOpMode {
             x *= normalizeVector;
             y *= normalizeVector;
 
+
+            if(Double.isNaN(x)){
+                x = 0;
+            }
+
+            if(Double.isNaN(y)){
+                y = 0;
+            }
+            
+            x *= moveAmnt;
+            y *= moveAmnt;
+
             //assign power to motors
 
             double leftfrontPower = y - x - rot;
             double rightfrontPower = y + x + rot;
             double leftbackPower = y + x - rot;
             double rightbackPower = y - x + rot;
+
             frontleft.setPower(leftfrontPower);
             frontright.setPower(rightfrontPower);
             backleft.setPower(leftbackPower);
@@ -157,6 +172,9 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("front right motor", rightfrontPower);
             telemetry.addData("back left motor", leftbackPower);
             telemetry.addData("back right motor", rightbackPower);
+            telemetry.addData("x input", x);
+            telemetry.addData("y input", y);
+            telemetry.addData("rotation input", rot);
             telemetry.addData("Sort Que:", sortAmt);
             telemetry.update();
 
