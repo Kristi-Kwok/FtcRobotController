@@ -78,7 +78,7 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
-            if (gamepad1.aWasPressed()) {
+            if (gamepad1.aWasPressed()){
                 imu.resetYaw();
             }
 
