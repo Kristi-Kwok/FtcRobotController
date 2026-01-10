@@ -61,18 +61,18 @@ public class bluebottom extends LinearOpMode {
         waitForStart();
 
 
-        move(0,1,1050, .5);
-        sleep(1070);
+        move(0,1,1000, .5);
+        sleep(1000);
         rotate(-1, 70);
         sleep(140);
         move(0,1,550, 0.4);
         sleep(550);
         shoot();
         sleep(300);
-        move(0, -1, 175, 0.75);
-        sleep(175);
-        move(-1, 0, 300, 0.75);
-        sleep(300);
+        move(0, -1, 150, 0.75);
+        sleep(150);
+        move(-1, 0, 150, 0.75);
+        sleep(150);
     }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1

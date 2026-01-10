@@ -78,12 +78,12 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
-            if (gamepad1.aWasPressed()){
+            if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()){
                 imu.resetYaw();
             }
 
 
-            if(gamepad1.yWasPressed()){
+            if(gamepad1.yWasPressed() || gamepad1.leftStickButtonWasPressed()){
                 if(moveSpeed == 1){
                     moveSpeed = 0.2;
                 } else{
@@ -168,6 +168,7 @@ public class kristiMecanum extends LinearOpMode {
             
             x *= moveAmnt;
             y *= moveAmnt;
+            rot *= moveSpeed;
 
             //assign power to motors
 

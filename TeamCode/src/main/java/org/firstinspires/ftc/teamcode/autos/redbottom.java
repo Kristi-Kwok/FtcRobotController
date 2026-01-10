@@ -62,8 +62,8 @@ public class redbottom extends LinearOpMode {
 
 
         move(0,1,800, 0.5);
-        sleep(1100);
-        rotate(1, 70);
+        sleep(800);
+        rotate(1, 85);
         sleep(70);
         move(0,1,500, 0.4);
         sleep(500);
@@ -71,8 +71,8 @@ public class redbottom extends LinearOpMode {
         sleep(300);
         move(0, -1, 175, 0.75);
         sleep(175);
-        move(1, 0, 300, 0.75);
-        sleep(300);
+        move(1, 0, 175, 0.75);
+        sleep(175);
     }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1
