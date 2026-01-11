@@ -80,6 +80,7 @@ public class kristiMecanum extends LinearOpMode {
 
             if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()){
                 imu.resetYaw();
+                rotOffset = 0;
             }
 
 
@@ -243,7 +244,7 @@ public class kristiMecanum extends LinearOpMode {
                     }
                 } else if(sortAmt > 0){ //sorting system
                 double motorSpeedTowardsTarget;
-                targetFlywheelVel = 525;
+                targetFlywheelVel = 600;
 
                 if(flywheelVel < targetFlywheelVel) {
                     if (flywheelVel > (targetFlywheelVel / 2)) {
