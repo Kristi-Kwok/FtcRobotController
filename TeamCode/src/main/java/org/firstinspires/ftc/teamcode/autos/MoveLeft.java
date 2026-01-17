@@ -57,8 +57,8 @@ public class MoveLeft extends LinearOpMode {
         imu.resetYaw();
         waitForStart();
 
-        move(1, 0, 50, .75);
-        sleep(50);
+        move(1, 0, 75, .75);
+        sleep(75);
     }
 
     public void move(double x, double y, long time, double power) throws InterruptedException {

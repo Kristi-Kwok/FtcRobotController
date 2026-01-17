@@ -64,8 +64,8 @@ public class redbottom extends LinearOpMode {
         move(0,1,800, 0.5);
         sleep(800);
         rotate(1, 85);
-        sleep(70);
-        move(0,1,500, 0.4);
+        sleep(85);
+        move(0,1,500, 0.25);
         sleep(500);
         shoot();
         sleep(300);
