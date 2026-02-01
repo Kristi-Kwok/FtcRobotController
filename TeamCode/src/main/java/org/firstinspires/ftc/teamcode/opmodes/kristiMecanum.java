@@ -27,6 +27,7 @@ public class kristiMecanum extends LinearOpMode {
     double rotOffset = 0;
 
     double moveSpeed = 1;
+    double defaultFlywheelVel = 500;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -70,7 +71,7 @@ public class kristiMecanum extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            if(!shooting){
+            if (!shooting) {
                 shootTimer.reset();
                 shooting = true;
             }
@@ -78,20 +79,27 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
-            if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()){
+            if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()) {
                 imu.resetYaw();
                 rotOffset = 0;
             }
 
 
-            if(gamepad1.yWasPressed() || gamepad1.leftStickButtonWasPressed()){
-                if(moveSpeed == 1){
+            if (gamepad1.yWasPressed() || gamepad1.leftStickButtonWasPressed()) {
+                if (moveSpeed == 1) {
                     moveSpeed = 0.2;
-                } else{
+                } else {
                     moveSpeed = 1;
                 }
             }
 
+            //Press after loading
+            if(gamepad1.dpad_right){
+                //wait x amt of time
+                defaultFlywheelVel = 500;
+            }
+
+            //MOVEMENT
 
             double x = gamepad1.left_stick_x;
             double y = gamepad1.left_stick_y;
@@ -110,41 +118,41 @@ public class kristiMecanum extends LinearOpMode {
             //change data from IMU so 0 degrees is forward
             double curDirection = heading + rotOffset;
 
-            if(curDirection > 180){
+            if (curDirection > 180) {
                 curDirection -= 360;
-            }else if(curDirection < -180){
+            } else if (curDirection < -180) {
                 curDirection += 360;
             }
 
             //use direction to "rotate" movement inputs
-            if(0 <= curDirection && curDirection <= 90){
+            if (0 <= curDirection && curDirection <= 90) {
                 xPolarity = 1;
                 yPolarity = 1;
                 xPolarityY = 1;
                 yPolarityX = -1;
 
                 weight = 1 - (curDirection / 90);
-            }else if(90 <= curDirection && curDirection <= 180){
+            } else if (90 <= curDirection && curDirection <= 180) {
                 xPolarity = -1;
                 yPolarity = -1;
                 xPolarityY = 1;
                 yPolarityX = -1;
 
                 weight = ((curDirection - 90) / 90);
-            }else if(-90 <= curDirection && curDirection <= 0){
+            } else if (-90 <= curDirection && curDirection <= 0) {
                 xPolarity = 1;
                 yPolarity = 1;
                 xPolarityY = -1;
                 yPolarityX = 1;
 
-                weight = 1 - ((curDirection*-1) / 90);
-            }else if(-180 <= curDirection && curDirection <= -90){
+                weight = 1 - ((curDirection * -1) / 90);
+            } else if (-180 <= curDirection && curDirection <= -90) {
                 xPolarity = -1;
                 yPolarity = -1;
                 xPolarityY = -1;
                 yPolarityX = 1;
 
-                weight = (((curDirection*-1)-90) / 90);
+                weight = (((curDirection * -1) - 90) / 90);
             }
 
 
@@ -159,14 +167,14 @@ public class kristiMecanum extends LinearOpMode {
             y *= normalizeVector;
 
 
-            if(Double.isNaN(x)){
+            if (Double.isNaN(x)) {
                 x = 0;
             }
 
-            if(Double.isNaN(y)){
+            if (Double.isNaN(y)) {
                 y = 0;
             }
-            
+
             x *= moveAmnt;
             y *= moveAmnt;
             rot *= moveSpeed;
@@ -194,97 +202,102 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("y input", y);
             telemetry.addData("rotation input", rot);
             telemetry.addData("Sort Que:", sortAmt);
+            telemetry.addData("Flywheel Velocity", flywheelVel);
+            telemetry.addData("Target Flywheel Velocity", targetFlywheelVel);
+
             telemetry.update();
 
-            if(gamepad1.xWasPressed()){
+            //FLYWHEEL (SHOOTING, SORTING, REVERSE)
+
+            if (gamepad1.xWasPressed()) {
                 sortAmt += 1;
             }
 
-            if(gamepad1.b) {
+            if (gamepad1.b) {
                 flywheel.setPower(-0.4);
                 right_launch_servo.setPower(1);
                 left_launch_servo.setPower(-1);
-            }else if(gamepad1.right_bumper){
-                double motorSpeedTowardsTarget;
-                targetFlywheelVel = 1650;
-                if(gamepad1.left_bumper){
+                sortAmt = 0;
+            } else if (gamepad1.right_bumper) {
+                defaultFlywheelVel = 0;
+                //regular shot speed
+                if(targetFlywheelVel < 1000)
+                    targetFlywheelVel = 1490;
+                if (gamepad1.left_bumper) {
+                    //power shot speed
                     targetFlywheelVel = 2600;
                 }
 
-                    if(flywheelVel < targetFlywheelVel) {
-                        if (flywheelVel > (targetFlywheelVel / 2)) {
-                            double normalVel = flywheelVel / targetFlywheelVel;
-                            motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
-                            if(motorSpeedTowardsTarget < 0)
-                                motorSpeedTowardsTarget = 0;
-                        } else {
-                            motorSpeedTowardsTarget = 1;
-                        }
-                        flywheel.setPower(motorSpeedTowardsTarget);
-                    }
-                    else {
-                        flywheel.setPower(0);
-                    }
 
+                counter += 1;
 
-                    counter += 1;
-
-                    if (counter == 200) {
+                    if (counter == 10) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                     }
-                    if (counter == 215) {
+                    if (counter == 15) {
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
+                        if(targetFlywheelVel > 1470)
+                            targetFlywheelVel -= 40;
                     }
-                    if (counter == 300) {
+                    if (counter == 27) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
-                        counter = 201;
+                        counter = 11;
                     }
-                } else if(sortAmt > 0){ //sorting system
-                double motorSpeedTowardsTarget;
-                targetFlywheelVel = 600;
 
-                if(flywheelVel < targetFlywheelVel) {
-                    if (flywheelVel > (targetFlywheelVel / 2)) {
+
+            } else if (sortAmt > 0) { //sorting system
+                defaultFlywheelVel = 0;
+                targetFlywheelVel = 720;
+
+                sortCounter += 1;
+
+                if (sortCounter == 100) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                }
+                if (sortCounter == 130) {
+                    right_launch_servo.setPower(1);
+                    left_launch_servo.setPower(-1);
+                    if(targetFlywheelVel > 620)
+                        targetFlywheelVel -= 100;
+                }
+                if (sortCounter == 150) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                    counter = 101;
+                    sortAmt -= 1;
+                }
+
+            } else {
+                counter = 0;
+                sortCounter = 0;
+                targetFlywheelVel = defaultFlywheelVel;
+                right_launch_servo.setPower(0);
+                left_launch_servo.setPower(0);
+            }
+
+
+            if (!gamepad1.b) {
+                double slowThreshold = 2;
+                double motorSpeedTowardsTarget;
+                if (flywheelVel < targetFlywheelVel) {
+                    if (flywheelVel > (targetFlywheelVel / slowThreshold) * (slowThreshold - 1)) {
                         double normalVel = flywheelVel / targetFlywheelVel;
                         motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
-                        if(motorSpeedTowardsTarget < 0)
+                        if (motorSpeedTowardsTarget < 0)
                             motorSpeedTowardsTarget = 0;
                     } else {
                         motorSpeedTowardsTarget = 1;
                     }
                     flywheel.setPower(motorSpeedTowardsTarget);
-                }
-                else {
+                } else {
                     flywheel.setPower(0);
-                }
-
-
-                    sortCounter += 1;
-
-                    if (sortCounter == 200) {
-                        right_launch_servo.setPower(-1);
-                        left_launch_servo.setPower(1);
-                    }
-                    if (sortCounter == 215) {
-                        right_launch_servo.setPower(0);
-                        left_launch_servo.setPower(0);
-                    }
-                    if (sortCounter == 300) {
-                        sortCounter = 180;
-                        sortAmt -= 1;
-                    }
-
-                }else {
-                    counter = 0;
-                    sortCounter = 0;
-                    flywheel.setPower(0);
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
                 }
             }
 
         }
     }
+}

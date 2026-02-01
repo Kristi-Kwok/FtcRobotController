@@ -29,8 +29,8 @@ public class newRobot extends LinearOpMode {
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
         // You don't HAVE to do this, but it makes things clear
-        frontleft.setDirection(DcMotor.Direction.FORWARD);
-        frontright.setDirection(DcMotor.Direction.REVERSE);
+        frontleft.setDirection(DcMotor.Direction.REVERSE );
+        frontright.setDirection(DcMotor.Direction.FORWARD);
         backleft.setDirection(DcMotor.Direction.FORWARD);
         backright.setDirection(DcMotor.Direction.REVERSE);
 
@@ -128,25 +128,27 @@ public class newRobot extends LinearOpMode {
                 weight = (((curDirection * -1) - 90) / 90);
             }
 
+            if(false){
+                double oldX = x;
 
-            double oldX = x;
+                x = (x * weight * xPolarity) + (y * (1 - weight) * yPolarityX);
+                y = (y * weight * yPolarity) + (oldX * (1 - weight) * xPolarityY);
 
-            x = (x * weight * xPolarity) + (y * (1 - weight) * yPolarityX);
-            y = (y * weight * yPolarity) + (oldX * (1 - weight) * xPolarityY);
+                double normalizeVector = 1 / (Math.abs(x) + Math.abs(y));
 
-            double normalizeVector = 1 / (Math.abs(x) + Math.abs(y));
-
-            x *= normalizeVector;
-            y *= normalizeVector;
+                x *= normalizeVector;
+                y *= normalizeVector;
 
 
-            if (Double.isNaN(x)) {
-                x = 0;
+                if (Double.isNaN(x)) {
+                    x = 0;
+                }
+
+                if (Double.isNaN(y)) {
+                    y = 0;
+                }
             }
 
-            if (Double.isNaN(y)) {
-                y = 0;
-            }
 
             x *= moveAmnt;
             y *= moveAmnt;
