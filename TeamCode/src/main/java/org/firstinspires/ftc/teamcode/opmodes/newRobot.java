@@ -17,6 +17,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 public class newRobot extends LinearOpMode {
     double rotOffset = 0;
     double moveSpeed = 1;
+    double flywheelVel = 0;
+    double targetFlywheelVel = 1700;
+    double defaultFlywheelVel = 0;
 
 
     @Override
@@ -26,13 +29,17 @@ public class newRobot extends LinearOpMode {
         DcMotor backleft = hardwareMap.get(DcMotor.class, "backleft");
         DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor flywheel = hardwareMap.get(DcMotor.class, "flywheel");
+        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         IMU imu = hardwareMap.get(IMU.class, "imu");
 
         // You don't HAVE to do this, but it makes things clear
-        frontleft.setDirection(DcMotor.Direction.REVERSE );
+        frontleft.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.FORWARD);
         backleft.setDirection(DcMotor.Direction.FORWARD);
         backright.setDirection(DcMotor.Direction.REVERSE);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Make the motors brake whenever their power is zero
         frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -40,6 +47,7 @@ public class newRobot extends LinearOpMode {
         backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
@@ -58,7 +66,6 @@ public class newRobot extends LinearOpMode {
         while (opModeIsActive()) {
 
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-
             if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()) {
                 imu.resetYaw();
                 rotOffset = 0;
@@ -128,7 +135,7 @@ public class newRobot extends LinearOpMode {
                 weight = (((curDirection * -1) - 90) / 90);
             }
 
-            if(false){
+            if (false) {
                 double oldX = x;
 
                 x = (x * weight * xPolarity) + (y * (1 - weight) * yPolarityX);
@@ -168,22 +175,49 @@ public class newRobot extends LinearOpMode {
 
 
             //intake
-            if(gamepad1.b){
+            if (gamepad1.b) {
                 intake.setPower(-1);
-            } else if(y > Math.abs(x) || gamepad1.x){
+            } else if (y > Math.abs(x) || gamepad1.x) {
                 intake.setPower(1);
-            }else{
+            } else {
                 intake.setPower(0);
             }
 
+            if (gamepad1.right_bumper) {
+                defaultFlywheelVel = 0;
+                //regular shot speed
+                targetFlywheelVel = 1490;
+                } else {
+                    targetFlywheelVel = defaultFlywheelVel;
+                }
 
-            telemetry.addData("Heading (Z)", heading);
+                telemetry.addData("Heading (Z)", heading);
 
-            telemetry.addData("front left motor", leftfrontPower);
-            telemetry.addData("front right motor", rightfrontPower);
-            telemetry.addData("back left motor", leftbackPower);
-            telemetry.addData("back right motor", rightbackPower);
-            telemetry.update();
+                telemetry.addData("front left motor", leftfrontPower);
+                telemetry.addData("front right motor", rightfrontPower);
+                telemetry.addData("back left motor", leftbackPower);
+                telemetry.addData("back right motor", rightbackPower);
+                telemetry.addData("Flywheel Velocity", flywheelVel);
+                telemetry.addData("Target Flywheel Velocity", targetFlywheelVel);
+                telemetry.update();
+
+                if (!gamepad1.b) {
+                    double slowThreshold = 2;
+                    double motorSpeedTowardsTarget;
+                    if (flywheelVel < targetFlywheelVel) {
+                        if (flywheelVel > (targetFlywheelVel / slowThreshold) * (slowThreshold - 1)) {
+                            double normalVel = flywheelVel / targetFlywheelVel;
+                            motorSpeedTowardsTarget = 1 - (2 * (normalVel - 0.5));
+                            if (motorSpeedTowardsTarget < 0)
+                                motorSpeedTowardsTarget = 0;
+                        } else {
+                            motorSpeedTowardsTarget = 1;
+                        }
+                        flywheel.setPower(motorSpeedTowardsTarget);
+                    } else {
+                        flywheel.setPower(0);
+                    }
+                }
+            }
         }
     }
-}
