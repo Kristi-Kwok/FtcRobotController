@@ -176,8 +176,34 @@ public class newRobot extends LinearOpMode {
                 intake.setPower(0);
             }
 
+            //LIMELIGHT AIMING
+            //test values, plug in apriltag values
+            double distFromTag = 20; //range
+            double angleToTag = 30; //bearing
+            double tagAngleToFlat = 0; //flat -> flat for the camera (straight on) also called yaw
+            //check negative values
 
-            telemetry.addData("Heading (Z)", heading);
+
+            //We get these values from the apriltag reading, but want them to be accurate here
+            double opp1 = distFromTag * Math.sin(Math.toRadians(angleToTag)) * xPolarity; //x
+            double adj1 = distFromTag * Math.cos(Math.toRadians(angleToTag)); //y
+
+            //Legs of the tag-to-corner hypotenuse
+            double opp2 = 18.3 * Math.sin(Math.toRadians(tagAngleToFlat)) * -xPolarity;
+            double adj2 = 18.3 * Math.cos(Math.toRadians(tagAngleToFlat));
+
+            //robot-to-corner triangle
+            double opp3 = opp1 + opp2;
+            double adj3 = adj1 + adj2;
+            double dist = Math.sqrt((opp3 * opp3) + (adj3 * adj3));
+            double angleToCorner = Math.toDegrees(Math.atan2(opp3, adj3));
+
+
+
+
+            telemetry.addData("Corner Distance", dist);
+            telemetry.addData("Angle To Corner", angleToCorner);
+
 
             telemetry.addData("front left motor", leftfrontPower);
             telemetry.addData("front right motor", rightfrontPower);

@@ -94,9 +94,8 @@ public class kristiMecanum extends LinearOpMode {
             }
 
             //Press after loading
-            if(gamepad1.dpad_right){
-                //wait x amt of time
-                defaultFlywheelVel = 500;
+            if (gamepad1.dpad_right || gamepad1.left_bumper || gamepad2.a) {
+                WaitForFlywheelCharge(2000);
             }
 
             //MOVEMENT
@@ -221,34 +220,54 @@ public class kristiMecanum extends LinearOpMode {
             } else if (gamepad1.right_bumper) {
                 defaultFlywheelVel = 0;
                 //regular shot speed
-                if(targetFlywheelVel < 1000)
+                if (targetFlywheelVel < 1000)
                     targetFlywheelVel = 1490;
-                if (gamepad1.left_bumper) {
-                    //power shot speed
-                    targetFlywheelVel = 2600;
-                }
 
 
                 counter += 1;
 
-                    if (counter == 10) {
-                        right_launch_servo.setPower(-1);
-                        left_launch_servo.setPower(1);
-                    }
-                    if (counter == 15) {
-                        right_launch_servo.setPower(0);
-                        left_launch_servo.setPower(0);
-                        if(targetFlywheelVel > 1470)
-                            targetFlywheelVel -= 40;
-                    }
-                    if (counter == 27) {
-                        right_launch_servo.setPower(-1);
-                        left_launch_servo.setPower(1);
-                        counter = 11;
-                    }
+                if (counter == 10) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                }
+                if (counter == 15) {
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                    if (targetFlywheelVel > 1470)
+                        targetFlywheelVel -= 40;
+                }
+                if (counter == 27) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                    counter = 11;
+                }
 
 
-            } else if (sortAmt > 0) { //sorting system
+            } else if(gamepad1.right_trigger > 0.5f){
+                defaultFlywheelVel = 0;
+                //regular shot speed
+                if (targetFlywheelVel < 1000)
+                    targetFlywheelVel = 2600;
+
+
+                counter += 1;
+
+                if (counter == 100) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                }
+                if (counter == 115) {
+                    right_launch_servo.setPower(0);
+                    left_launch_servo.setPower(0);
+                    if (targetFlywheelVel > 1470)
+                        targetFlywheelVel -= 40;
+                }
+                if (counter == 127) {
+                    right_launch_servo.setPower(-1);
+                    left_launch_servo.setPower(1);
+                    counter = 101;
+                }
+            }else if (sortAmt > 0) { //sorting system
                 defaultFlywheelVel = 0;
                 targetFlywheelVel = 720;
 
@@ -299,5 +318,10 @@ public class kristiMecanum extends LinearOpMode {
             }
 
         }
+    }
+
+    public void WaitForFlywheelCharge(long waitTime){
+        sleep(waitTime);
+        defaultFlywheelVel = 500;
     }
 }
