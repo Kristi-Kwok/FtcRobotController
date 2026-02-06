@@ -198,7 +198,20 @@ public class newRobot extends LinearOpMode {
             double dist = Math.sqrt((opp3 * opp3) + (adj3 * adj3));
             double angleToCorner = Math.toDegrees(Math.atan2(opp3, adj3));
 
+            //This calcs how much power to use
 
+            double height = 10;
+            double targetHeight = 40;
+
+            //testing values, we need to test
+            double flywheelVelPerDist = 1000; //Flywheel velocity for when target is 100 in away, constant
+            double velModifier_perDist = 71.4285714286; //velModifier for when target is 100 in away, constant (calc in desmos)
+
+            double velModifier = -(dist*dist)/((targetHeight - height - dist) * 2.0);
+            double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
+
+            System.out.println(velModifier);
+            System.out.println(neededVelocity);
 
 
             telemetry.addData("Corner Distance", dist);
