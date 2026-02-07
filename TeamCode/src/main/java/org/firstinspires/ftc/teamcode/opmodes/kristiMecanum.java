@@ -27,7 +27,7 @@ public class kristiMecanum extends LinearOpMode {
     double rotOffset = 0;
 
     double moveSpeed = 1;
-    double defaultFlywheelVel = 500;
+    double defaultFlywheelVel = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
