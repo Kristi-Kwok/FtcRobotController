@@ -95,7 +95,8 @@ public class kristiMecanum extends LinearOpMode {
 
             //Press after loading
             if (gamepad1.dpad_right || gamepad1.left_bumper || gamepad2.a) {
-                WaitForFlywheelCharge(2000);
+                //stopped waiting, too much work :P
+                defaultFlywheelVel = 500;
             }
 
             //MOVEMENT
@@ -218,7 +219,9 @@ public class kristiMecanum extends LinearOpMode {
                 left_launch_servo.setPower(-1);
                 sortAmt = 0;
             } else if (gamepad1.right_bumper) {
+                double oldFlywheelVel = defaultFlywheelVel;
                 defaultFlywheelVel = 0;
+                sortAmt = 0;
                 //regular shot speed
                 if (targetFlywheelVel < 1000)
                     targetFlywheelVel = 1490;
@@ -226,24 +229,45 @@ public class kristiMecanum extends LinearOpMode {
 
                 counter += 1;
 
-                if (counter == 10) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
+                if(oldFlywheelVel > 0){
+                    if (counter == 10) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    if (counter == 15) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                        if (targetFlywheelVel > 1470)
+                            targetFlywheelVel -= 40;
+                    }
+                    if (counter == 27) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 11;
+                    }
+                } else {
+                    if (counter == 75) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    if (counter == 80) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                        if (targetFlywheelVel > 1470)
+                            targetFlywheelVel -= 40;
+                    }
+                    if (counter == 102) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 76;
+                    }
                 }
-                if (counter == 15) {
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                    if (targetFlywheelVel > 1470)
-                        targetFlywheelVel -= 40;
-                }
-                if (counter == 27) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                    counter = 11;
-                }
+
 
 
             } else if(gamepad1.right_trigger > 0.5f){
+                double oldFlywheelVel = defaultFlywheelVel;
+                sortAmt = 0;
                 defaultFlywheelVel = 0;
                 //regular shot speed
                 if (targetFlywheelVel < 1000)
@@ -252,20 +276,38 @@ public class kristiMecanum extends LinearOpMode {
 
                 counter += 1;
 
-                if (counter == 100) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                }
-                if (counter == 115) {
-                    right_launch_servo.setPower(0);
-                    left_launch_servo.setPower(0);
-                    if (targetFlywheelVel > 1470)
-                        targetFlywheelVel -= 40;
-                }
-                if (counter == 127) {
-                    right_launch_servo.setPower(-1);
-                    left_launch_servo.setPower(1);
-                    counter = 101;
+                if(oldFlywheelVel > 0) {
+                    if (counter == 50) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    if (counter == 65) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                        if (targetFlywheelVel > 1470)
+                            targetFlywheelVel -= 40;
+                    }
+                    if (counter == 77) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 51;
+                    }
+                } else {
+                    if (counter == 100) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    if (counter == 115) {
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                        if (targetFlywheelVel > 1470)
+                            targetFlywheelVel -= 40;
+                    }
+                    if (counter == 127) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 101;
+                    }
                 }
             }else if (sortAmt > 0) { //sorting system
                 defaultFlywheelVel = 0;
@@ -286,8 +328,20 @@ public class kristiMecanum extends LinearOpMode {
                 if (sortCounter == 150) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
-                    counter = 101;
+                    sortCounter = 101;
                     sortAmt -= 1;
+                    if(sortAmt == 0){
+                        sortAmt = 100;
+                        sortCounter = 0;
+                        flywheel.setPower(-0.4);
+
+                        right_launch_servo.setPower(1);
+                        left_launch_servo.setPower(-1);
+                    }
+                }
+
+                if(sortAmt > 50 && sortCounter == 130){
+                    sortAmt = 0;
                 }
 
             } else {
@@ -299,7 +353,7 @@ public class kristiMecanum extends LinearOpMode {
             }
 
 
-            if (!gamepad1.b) {
+            if (!gamepad1.b && sortAmt < 50) {
                 double slowThreshold = 2;
                 double motorSpeedTowardsTarget;
                 if (flywheelVel < targetFlywheelVel) {
