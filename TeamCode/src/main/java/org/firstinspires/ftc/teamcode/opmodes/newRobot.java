@@ -183,13 +183,14 @@ public class newRobot extends LinearOpMode {
             double tagAngleToFlat = 0; //flat -> flat for the camera (straight on) also called yaw
             //check negative values
 
+            double polarityX = 1;
 
             //We get these values from the apriltag reading, but want them to be accurate here
-            double opp1 = distFromTag * Math.sin(Math.toRadians(angleToTag)) * xPolarity; //x
-            double adj1 = distFromTag * Math.cos(Math.toRadians(angleToTag)); //y
+            double opp1 = distFromTag * Math.sin(Math.toRadians(angleToTag)) * polarityX; //x, maybe absolute value this?
+            double adj1 = distFromTag * Math.cos(Math.toRadians(angleToTag)); //y, maybe absolute value this?
 
             //Legs of the tag-to-corner hypotenuse
-            double opp2 = 18.3 * Math.sin(Math.toRadians(tagAngleToFlat)) * -xPolarity;
+            double opp2 = 18.3 * Math.sin(Math.toRadians(tagAngleToFlat)) * -polarityX;
             double adj2 = 18.3 * Math.cos(Math.toRadians(tagAngleToFlat));
 
             //robot-to-corner triangle

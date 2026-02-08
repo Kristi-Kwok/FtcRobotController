@@ -55,6 +55,7 @@ public class kristiMecanum extends LinearOpMode {
         backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
+
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD,
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
@@ -193,17 +194,12 @@ public class kristiMecanum extends LinearOpMode {
 
 
             telemetry.addData("Heading (Z)", heading);
-
-            telemetry.addData("front left motor", leftfrontPower);
-            telemetry.addData("front right motor", rightfrontPower);
-            telemetry.addData("back left motor", leftbackPower);
-            telemetry.addData("back right motor", rightbackPower);
-            telemetry.addData("x input", x);
-            telemetry.addData("y input", y);
-            telemetry.addData("rotation input", rot);
             telemetry.addData("Sort Que:", sortAmt);
             telemetry.addData("Flywheel Velocity", flywheelVel);
             telemetry.addData("Target Flywheel Velocity", targetFlywheelVel);
+            telemetry.addData("Left Servo", left_launch_servo.getPower());
+            telemetry.addData("Right Servo", right_launch_servo.getPower());
+
 
             telemetry.update();
 
@@ -234,13 +230,13 @@ public class kristiMecanum extends LinearOpMode {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                     }
-                    if (counter == 15) {
+                    if (counter == 20) {
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
                         if (targetFlywheelVel > 1470)
                             targetFlywheelVel -= 40;
                     }
-                    if (counter == 27) {
+                    if (counter == 24) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                         counter = 11;
@@ -250,13 +246,13 @@ public class kristiMecanum extends LinearOpMode {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                     }
-                    if (counter == 80) {
+                    if (counter == 85) {
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
                         if (targetFlywheelVel > 1470)
                             targetFlywheelVel -= 40;
                     }
-                    if (counter == 102) {
+                    if (counter == 89) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                         counter = 76;
@@ -271,7 +267,7 @@ public class kristiMecanum extends LinearOpMode {
                 defaultFlywheelVel = 0;
                 //regular shot speed
                 if (targetFlywheelVel < 1000)
-                    targetFlywheelVel = 2600;
+                    targetFlywheelVel = 2350;
 
 
                 counter += 1;
@@ -311,19 +307,19 @@ public class kristiMecanum extends LinearOpMode {
                 }
             }else if (sortAmt > 0) { //sorting system
                 defaultFlywheelVel = 0;
-                targetFlywheelVel = 720;
+                targetFlywheelVel = 760;
 
                 sortCounter += 1;
 
-                if (sortCounter == 100) {
+                if (sortCounter == 100 && sortAmt < 50) {
                     right_launch_servo.setPower(-1);
                     left_launch_servo.setPower(1);
                 }
-                if (sortCounter == 130) {
+                if (sortCounter == 130 && sortAmt < 50) {
                     right_launch_servo.setPower(1);
                     left_launch_servo.setPower(-1);
-                    if(targetFlywheelVel > 620)
-                        targetFlywheelVel -= 100;
+                    if(targetFlywheelVel > 700)
+                        targetFlywheelVel -=65;
                 }
                 if (sortCounter == 150) {
                     right_launch_servo.setPower(-1);
@@ -331,7 +327,7 @@ public class kristiMecanum extends LinearOpMode {
                     sortCounter = 101;
                     sortAmt -= 1;
                     if(sortAmt == 0){
-                        sortAmt = 100;
+                        sortAmt = 1000;
                         sortCounter = 0;
                         flywheel.setPower(-0.4);
 
@@ -374,8 +370,4 @@ public class kristiMecanum extends LinearOpMode {
         }
     }
 
-    public void WaitForFlywheelCharge(long waitTime){
-        sleep(waitTime);
-        defaultFlywheelVel = 500;
-    }
 }
