@@ -233,8 +233,11 @@ public class kristiMecanum extends LinearOpMode {
                     if (counter == 20) {
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
-                        if (targetFlywheelVel > 1470)
+                        if (targetFlywheelVel > 1470) {
                             targetFlywheelVel -= 40;
+                        } else{
+                            targetFlywheelVel += 40;
+                        }
                     }
                     if (counter == 24) {
                         right_launch_servo.setPower(-1);
@@ -246,11 +249,17 @@ public class kristiMecanum extends LinearOpMode {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                     }
+                    
                     if (counter == 85) {
+
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
-                        if (targetFlywheelVel > 1470)
+                        if (targetFlywheelVel > 1470) {
                             targetFlywheelVel -= 40;
+
+                        }else{
+                            targetFlywheelVel += 40;
+                        }
                     }
                     if (counter == 89) {
                         right_launch_servo.setPower(-1);
