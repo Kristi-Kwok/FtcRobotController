@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name = "newRobotRed")
@@ -26,11 +27,15 @@ public class newRobotRed extends LinearOpMode {
     Limelight3A limelight;
     boolean isTargeting;
     double distToTarget;
+    double angleFromFlatToTarget;
     double angleToTarget;
     double xPos;
     double yPos;
     CRServo backWheel;
-
+    int artifactCount;
+    ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+    ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    boolean isShooting;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -40,6 +45,7 @@ public class newRobotRed extends LinearOpMode {
         DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         backWheel = hardwareMap.get(CRServo.class, "backWheel");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -108,6 +114,135 @@ public class newRobotRed extends LinearOpMode {
 
 
 
+            //keep track of how many artifacts we have
+            if(gamepad2.aWasPressed()){
+                if(artifactCount < 3){
+                    artifactCount++;
+                }
+            } else if(gamepad2.bWasPressed()){
+                if(artifactCount > 0){
+                    artifactCount++;
+                }
+            }
+
+            //testing servo, we don't need these controls in-game
+            if(gamepad1.dpad_up){
+                backWheel.setPower(1);
+            } else if(gamepad1.dpad_down){
+                backWheel.setPower(-1);
+            } else {
+                backWheel.setPower(0);
+            }
+
+            //intake
+            if(gamepad1.b){
+                intake.setPower(-1);
+                backWheel.setPower(-1);
+            } else if(y <  Math.abs(x) || gamepad1.x){
+                if(artifactCount != 3){
+                    intake.setPower(1);
+                    backWheel.setPower(-0.5);
+                }
+            }else{
+                intake.setPower(0);
+            }
+
+
+
+            //LIMELIGHT AIMING
+
+            limelight.updateRobotOrientation(heading + 90);
+
+            LLResult result = limelight.getLatestResult();
+            if (result != null && result.isValid()) {
+
+
+
+                //xPos = result.getBotpose_MT2().getPosition().x * 39.37;
+                //yPos = result.getBotpose_MT2().getPosition().y * 39.37;
+
+                //testing
+
+                xPos = result.getBotpose().getPosition().x * 39.37;
+                yPos = result.getBotpose().getPosition().y * 39.37;
+
+
+                double targetX = -70;
+                double targetY = 70;
+
+                double xDistToCorner = Math.abs(targetX - xPos);
+                double yDistToCorner = targetY - yPos;
+
+                distToTarget = Math.sqrt((xDistToCorner * xDistToCorner) + (yDistToCorner * yDistToCorner));
+                angleFromFlatToTarget = Math.toDegrees(Math.atan2(xDistToCorner, yDistToCorner));
+                angleToTarget = angleFromFlatToTarget - (heading - 90);
+
+                isTargeting = true;
+
+                telemetry.addData("Limelight", "Targeting");
+            } else {
+                telemetry.addData("Limelight", "No Targets");
+                isTargeting = false;
+            }
+
+
+            //This calcs how much power to use
+
+            double height = 10;
+            double targetHeight = 40;
+
+            //testing values, we need to test
+            double flywheelVelPerDist = 1000; //Flywheel velocity for when target is 100 in away, constant
+            double velModifier_perDist = 71.4285714286; //velModifier for when target is 100 in away, constant (calc in desmos)
+
+            double velModifier = -(distToTarget*distToTarget)/((targetHeight - height - distToTarget) * 2.0);
+            double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
+
+            //actually shooting
+
+            if(gamepad1.right_bumper){
+                //targetFlywheelVel = 1200;
+                rot = angleToTarget / 5;
+
+                if(Math.abs(angleToTarget) < 1 && !isShooting){
+                    isShooting = true;
+                    shootTimer.reset();
+                }
+
+                if (isShooting) {
+                    //megabrake?
+                    if(shootTimer.milliseconds() < 200){
+                        backWheel.setPower(1);
+                        intake.setPower(1);
+                    } else if(200 < shootTimer.milliseconds() && shootTimer.milliseconds() < 400){
+                        backWheel.setPower(0);
+                        intake.setPower(0);
+                        artifactCount -= 1;
+                    } else if(400 < shootTimer.milliseconds()){
+                        shootTimer.reset();
+                        if(artifactCount <= 0){
+                            isShooting = false;
+                        }
+                    }
+                }
+            } else {
+                //targetFlywheelVel = 0;
+                isShooting = false;
+            }
+
+            //offwall sorting
+            if(gamepad1.dpad_left){
+                if(xPos > 0){
+                    double xDist = 58.5 - xPos;
+                    x = xDist;
+                    double rotDist = -90 - heading;
+                    rot = rotDist/5;
+                }else{
+
+                }
+
+            }
+
             //FIELD CENTRIC
 
             double weight = 0;
@@ -158,7 +293,7 @@ public class newRobotRed extends LinearOpMode {
 
 
             double oldX = x;
-            double oldY = y;
+            //double oldY = y;
 
             x = (x * weight * xPolarity) + (y * (1 - weight) * yPolarityX);
             y = (y * weight * yPolarity) + (oldX * (1 - weight) * xPolarityY);
@@ -182,93 +317,6 @@ public class newRobotRed extends LinearOpMode {
             x *= moveAmnt;
             y *= moveAmnt;
             rot *= moveSpeed;
-
-
-
-
-            //intake
-            if(gamepad1.b){
-                intake.setPower(-1);
-            } else if(oldY <  Math.abs(oldX) || gamepad1.x){
-                intake.setPower(1);
-            }else{
-                intake.setPower(0);
-            }
-
-            if(gamepad1.dpad_up){
-                backWheel.setPower(1);
-                telemetry.addLine("turning");
-            }
-
-
-            //LIMELIGHT AIMING
-
-            limelight.updateRobotOrientation(curDirection + 90);
-
-            LLResult result = limelight.getLatestResult();
-            if (result != null && result.isValid()) {
-
-
-
-                //xPos = result.getBotpose_MT2().getPosition().x * 39.37;
-                //yPos = result.getBotpose_MT2().getPosition().y * 39.37;
-
-                //testing
-
-                xPos = result.getBotpose().getPosition().x * 39.37;
-                yPos = result.getBotpose().getPosition().y * 39.37;
-
-
-                double targetX = -70;
-                double targetY = 70;
-
-                double xDistToCorner = Math.abs(targetX - xPos);
-                double yDistToCorner = targetY - yPos;
-
-                distToTarget = Math.sqrt((xDistToCorner * xDistToCorner) + (yDistToCorner * yDistToCorner));
-                angleToTarget = Math.toDegrees(Math.atan2(xDistToCorner, yDistToCorner));
-
-                isTargeting = true;
-
-                telemetry.addData("Limelight", "Targeting");
-            } else {
-                telemetry.addData("Limelight", "No Targets");
-                isTargeting = false;
-            }
-
-
-            //This calcs how much power to use
-
-            double height = 10;
-            double targetHeight = 40;
-
-            //testing values, we need to test
-            double flywheelVelPerDist = 1000; //Flywheel velocity for when target is 100 in away, constant
-            double velModifier_perDist = 71.4285714286; //velModifier for when target is 100 in away, constant (calc in desmos)
-
-            double velModifier = -(distToTarget*distToTarget)/((targetHeight - height - distToTarget) * 2.0);
-            double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
-
-            //actually shooting
-
-            if(gamepad1.right_bumper){
-                //targetFlywheelVel = 1200;
-                rot = angleToTarget / 20;
-            } else {
-                //targetFlywheelVel = 0;
-            }
-
-            //offwall sorting
-            if(gamepad1.dpad_left){
-                if(xPos > 0){
-
-                }else{
-
-                }
-
-            }
-
-
 
             telemetry.addData("Corner Distance", distToTarget);
             telemetry.addData("Angle To Corner", angleToTarget);
@@ -320,8 +368,7 @@ public class newRobotRed extends LinearOpMode {
 
     public void drawRobot(double x, double y, double heading) {
 
-        FtcDas
-        hboard dashboard = FtcDashboard.getInstance();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
         Canvas fieldOverlay = packet.fieldOverlay();
 
