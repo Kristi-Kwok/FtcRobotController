@@ -210,13 +210,13 @@ public class newRobotRed extends LinearOpMode {
 
 
 
-                xPos = result.getBotpose_MT2().getPosition().x * 39.37;
-                yPos = result.getBotpose_MT2().getPosition().y * 39.37;
+                //xPos = result.getBotpose_MT2().getPosition().x * 39.37;
+                //yPos = result.getBotpose_MT2().getPosition().y * 39.37;
 
                 //testing
 
-                //xPos = result.getBotpose().getPosition().x * 39.37;
-                //yPos = result.getBotpose().getPosition().y * 39.37;
+                xPos = result.getBotpose().getPosition().x * 39.37;
+                yPos = result.getBotpose().getPosition().y * 39.37;
 
 
                 double targetX = -70;
@@ -320,7 +320,8 @@ public class newRobotRed extends LinearOpMode {
 
     public void drawRobot(double x, double y, double heading) {
 
-        FtcDashboard dashboard = FtcDashboard.getInstance();
+        FtcDas
+        hboard dashboard = FtcDashboard.getInstance();
         TelemetryPacket packet = new TelemetryPacket();
         Canvas fieldOverlay = packet.fieldOverlay();
 
