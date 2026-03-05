@@ -19,7 +19,7 @@ public class kristiMecanum extends LinearOpMode {
     double power = 1;
     double flywheelVel = 0;
     double targetFlywheelVel = 1700;
-    ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    ElapsedTime shootTimer = new ElapsedTime();
     boolean shooting = false;
     double offset = 0;
     int sortAmt = 0;
@@ -28,12 +28,6 @@ public class kristiMecanum extends LinearOpMode {
 
     double moveSpeed = 1;
     double defaultFlywheelVel = 0;
-    double oldFlywheelVel;
-    int waitTimeNotPrerun = 300;
-    int waitTimePrerun = 0;
-    int waitTimeServoForward = 100;
-    int waitTimeServoWait = 100;
-    String curChanging = "";
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -86,13 +80,13 @@ public class kristiMecanum extends LinearOpMode {
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             flywheelVel = flywheel.getVelocity();
 
-            if (gamepad1.aWasPressed()) {
+            if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()) {
                 imu.resetYaw();
                 rotOffset = 0;
             }
 
 
-            if (gamepad1.yWasPressed()) {
+            if (gamepad1.yWasPressed() || gamepad1.leftStickButtonWasPressed()) {
                 if (moveSpeed == 1) {
                     moveSpeed = 0.2;
                 } else {
@@ -207,15 +201,6 @@ public class kristiMecanum extends LinearOpMode {
             telemetry.addData("Right Servo", right_launch_servo.getPower());
 
 
-            //testing values
-
-
-
-            telemetry.addData("Currently Changing", curChanging);
-            telemetry.addData("no charge wait time", waitTimeNotPrerun);
-            telemetry.addData("servo forward time", waitTimeServoForward);
-            telemetry.addData("servo wait time", waitTimeServoWait);
-
             telemetry.update();
 
             //FLYWHEEL (SHOOTING, SORTING, REVERSE)
@@ -230,10 +215,7 @@ public class kristiMecanum extends LinearOpMode {
                 left_launch_servo.setPower(-1);
                 sortAmt = 0;
             } else if (gamepad1.right_bumper) {
-                if(gamepad1.rightBumperWasPressed()){
-                    shootTimer.reset();
-                    oldFlywheelVel = defaultFlywheelVel;
-                }
+                double oldFlywheelVel = defaultFlywheelVel;
                 defaultFlywheelVel = 0;
                 sortAmt = 0;
                 //regular shot speed
@@ -241,14 +223,14 @@ public class kristiMecanum extends LinearOpMode {
                     targetFlywheelVel = 1490;
 
 
-                //counter += 1;
+                counter += 1;
 
                 if(oldFlywheelVel > 0){
-                    if (shootTimer.milliseconds() < 100) {
+                    if (counter == 10) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                     }
-                    if (100 > shootTimer.milliseconds() && shootTimer.milliseconds() < 200) {
+                    if (counter == 20) {
                         right_launch_servo.setPower(0);
                         left_launch_servo.setPower(0);
                         if (targetFlywheelVel > 1470) {
@@ -257,28 +239,32 @@ public class kristiMecanum extends LinearOpMode {
                             targetFlywheelVel += 40;
                         }
                     }
-                    if (300 < shootTimer.milliseconds()) {
-                        right_launch_servo.setPower(-1);
-                        left_launch_servo.setPower(1);
-                    }
-                } else {
-                    if (shootTimer.milliseconds() < 300) {
-                        right_launch_servo.setPower(-1);
-                        left_launch_servo.setPower(1);
-                    }
-                    if (300 > shootTimer.milliseconds() && shootTimer.milliseconds() < 400) {
-                        right_launch_servo.setPower(0);
-                        left_launch_servo.setPower(0);
-                        if (targetFlywheelVel > 1470) {
-                            targetFlywheelVel -= 40;
-                        } else{
-                            targetFlywheelVel += 40;
-                        }
-                    }
-                    if (400 < shootTimer.milliseconds() && shootTimer.milliseconds() < 500) {
+                    if (counter == 24) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                         counter = 11;
+                    }
+                } else {
+                    if (counter == 75) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                    }
+                    
+                    if (counter == 85) {
+
+                        right_launch_servo.setPower(0);
+                        left_launch_servo.setPower(0);
+                        if (targetFlywheelVel > 1470) {
+                            targetFlywheelVel -= 40;
+
+                        }else{
+                            targetFlywheelVel += 40;
+                        }
+                    }
+                    if (counter == 89) {
+                        right_launch_servo.setPower(-1);
+                        left_launch_servo.setPower(1);
+                        counter = 76;
                     }
                 }
 
