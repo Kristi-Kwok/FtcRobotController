@@ -62,7 +62,7 @@ public class newRobotRed extends LinearOpMode {
         frontright.setDirection(DcMotor.Direction.REVERSE);
         backleft.setDirection(DcMotor.Direction.REVERSE);
         backright.setDirection(DcMotor.Direction.REVERSE);
-        flywheel.setDirection(DcMotor.Direction.REVERSE);
+        flywheel.setDirection(DcMotor.Direction.FORWARD);
 
         //Make the motors brake whenever their power is zero
         frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -141,7 +141,7 @@ public class newRobotRed extends LinearOpMode {
             } else if(y <  Math.abs(x) || gamepad1.x){
                 if(artifactCount != 3){
                     intake.setPower(1);
-                    backWheel.setPower(-0.5);
+                    backWheel.setPower(-1);
                 }
             }else{
                 intake.setPower(0);
@@ -197,6 +197,13 @@ public class newRobotRed extends LinearOpMode {
 
             double velModifier = -(distToTarget*distToTarget)/((targetHeight - height - distToTarget) * 2.0);
             double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
+
+            //test
+            if(gamepad1.dpad_right){
+                targetFlywheelVel = 1500;
+            } else {
+                targetFlywheelVel = 0;
+            }
 
             //actually shooting
 
