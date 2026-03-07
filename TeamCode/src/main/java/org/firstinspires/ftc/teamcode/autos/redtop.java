@@ -42,6 +42,11 @@ public class redtop extends LinearOpMode {
         backleft.setDirection(DcMotor.Direction.REVERSE);
         backright.setDirection(DcMotor.Direction.FORWARD);
 
+        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
@@ -120,11 +125,10 @@ public class redtop extends LinearOpMode {
             sleep(1);
         }
         sleep(300);
-
-        move(0, -1, 175);
-        sleep(175);
-        move(1, 0, 250);
-        sleep(250);
+        move(1, 0, 150);
+        sleep(500);
+        move(0.5, -0.5, 600);
+        sleep(500);
 
 
 

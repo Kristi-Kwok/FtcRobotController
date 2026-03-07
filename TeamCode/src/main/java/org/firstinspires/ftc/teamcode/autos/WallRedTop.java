@@ -12,10 +12,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+//Not Tested
 @Autonomous
-public class bluetop extends LinearOpMode {
+public class WallRedTop extends LinearOpMode {
     double flywheelVel = 0;
-    double targetFlywheelVel = 1600;
+    double targetFlywheelVel = 1680;
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
@@ -23,6 +24,8 @@ public class bluetop extends LinearOpMode {
     DcMotorEx flywheel;
     CRServo right_launch_servo;
     CRServo left_launch_servo;
+    ElapsedTime shootTimer = new ElapsedTime();
+    boolean shooting = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -47,6 +50,7 @@ public class bluetop extends LinearOpMode {
         backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.FORWARD,
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
@@ -57,14 +61,43 @@ public class bluetop extends LinearOpMode {
         telemetry.addData("Status", "IMU Calibrating...");
         telemetry.update();
 
-        ElapsedTime shootTimer = new ElapsedTime();
-
-        boolean shooting = false;
-
         double power = 0.7;
         imu.resetYaw();
         waitForStart();
 
+        move(-.5,.5,200);
+        sleep(200);
+        rotate(-1, 50);
+        sleep(50);
+        shoot();
+        sleep(300);
+        move(.5, -.5, 500);
+        sleep(500);
+        move(0,-1,165);
+        sleep(165);
+
+    }
+    public void move(double x, double y, double time) throws InterruptedException {
+
+        double leftfrontPower = y-x;
+        double rightfrontPower = y+x;
+        double leftbackPower = y+x;
+        double rightbackPower = y-x;
+        frontleft.setPower(leftfrontPower);
+        frontright.setPower(rightfrontPower);
+        backleft.setPower(leftbackPower);
+        backright.setPower(rightbackPower);
+
+        sleep((long)time);
+
+        frontleft.setPower(0);
+        frontright.setPower(0);
+        backleft.setPower(0);
+        backright.setPower(0);
+
+    }
+
+    public void shoot(){
 
         shooting = true;
         shootTimer.reset();
@@ -95,82 +128,48 @@ public class bluetop extends LinearOpMode {
             telemetry.addData("Velocity of Motor", flywheelVel);
             telemetry.update();
 
-            if (shootTimer.seconds() < 3 && shootTimer.seconds() > 2) {
+            if (shootTimer.seconds() < 2.4 && shootTimer.seconds() > 2) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
             }
-            if (shootTimer.seconds() < 5 && shootTimer.seconds() > 3) {
+            if (shootTimer.seconds() < 4 && shootTimer.seconds() > 2.4) {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 6.3 && shootTimer.seconds() > 6) {
+            if (shootTimer.seconds() < 4.4 && shootTimer.seconds() > 4) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
             }
-            if (shootTimer.seconds() < 9 && shootTimer.seconds() > 6.3) {
+            if (shootTimer.seconds() < 6 && shootTimer.seconds() > 4.4) {
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
-            if (shootTimer.seconds() < 9.5 && shootTimer.seconds() > 9) {
+            if (shootTimer.seconds() < 6.4 && shootTimer.seconds() > 6) {
                 right_launch_servo.setPower(-1);
                 left_launch_servo.setPower(1);
 
             }
-            if (shootTimer.seconds() > 9.5){
+            if (shootTimer.seconds() > 6.4){
                 shooting = false;
                 flywheel.setPower(0);
                 right_launch_servo.setPower(0);
                 left_launch_servo.setPower(0);
             }
             sleep(1);
+
         }
-        sleep(300);
-        move(1, 0, 100);
-        sleep(100);
-        move(0.5, -0.5, 150);
-        sleep(150);
-
-
     }
-    //Move in a certain direction for a certain amount of time
-    //Make sure x + y = 1
-    public void move(double x, double y, double time) throws InterruptedException {
-
-        double leftfrontPower = y+x;
-        double rightfrontPower = y-x;
-        double leftbackPower = y-x;
-        double rightbackPower = y+x;
-        frontleft.setPower(leftfrontPower);
-        frontright.setPower(rightfrontPower);
-        backleft.setPower(leftbackPower);
-        backright.setPower(rightbackPower);
-
-        sleep((long)time);
-
-
-
-    }
-
-    //rotate the robot
-    //direction = 1 for clockwise, direction = -1 for counterclockwise (intended, but doublecheck)
-    public void rotate(int direction, double time) throws InterruptedException {
+    public void rotate(int direction, long time) throws InterruptedException {
         frontleft.setPower(1 * direction);
         frontright.setPower(-1 * direction);
         backleft.setPower(1 * direction);
         backright.setPower(-1 * direction);
 
-        sleep((long)time);
+        sleep(time);
 
         frontleft.setPower(0);
         frontright.setPower(0);
         backleft.setPower(0);
         backright.setPower(0);
     }
-        }
-
-
-
-
-
-
-
+}

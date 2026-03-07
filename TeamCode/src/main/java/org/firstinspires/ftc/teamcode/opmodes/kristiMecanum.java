@@ -261,7 +261,7 @@ public class kristiMecanum extends LinearOpMode {
                             targetFlywheelVel += 40;
                         }
                     }
-                    if (counter == 89) {
+                    if (counter == 95) {
                         right_launch_servo.setPower(-1);
                         left_launch_servo.setPower(1);
                         counter = 76;
