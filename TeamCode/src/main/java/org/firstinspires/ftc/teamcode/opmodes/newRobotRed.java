@@ -32,9 +32,10 @@ public class newRobotRed extends LinearOpMode {
     double yPos;
     Servo gate;
     int artifactCount;
-    ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+    ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     boolean isShooting;
+    int flywheelTestingVelocity = 1000;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -72,8 +73,8 @@ public class newRobotRed extends LinearOpMode {
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.DOWN);
 
         IMU.Parameters parameters = new IMU.Parameters(orientation);
         imu.initialize(parameters);
@@ -84,12 +85,20 @@ public class newRobotRed extends LinearOpMode {
         imu.resetYaw();
         waitForStart();
 
+        runtime.reset();
+
 
         while (opModeIsActive()) {
 
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
-            if (gamepad1.aWasPressed() || gamepad1.dpadUpWasPressed()) {
+            if(gamepad2.dpadUpWasPressed()){
+                flywheelTestingVelocity += 10;
+            } else if(gamepad2.dpadDownWasPressed()){
+                flywheelTestingVelocity -= 10;
+            }
+
+            if (gamepad1.aWasPressed()) {
                 imu.resetYaw();
                 rotOffset = 0;
             }
@@ -191,7 +200,7 @@ public class newRobotRed extends LinearOpMode {
             //actually shooting
 
             if(gamepad1.right_bumper){
-                //targetFlywheelVel = 1200;
+                targetFlywheelVel = flywheelTestingVelocity;
                 rot = angleToTarget / 5;
 
                 if(Math.abs(angleToTarget) < 1 && !isShooting){
@@ -203,10 +212,10 @@ public class newRobotRed extends LinearOpMode {
                     //megabrake?
                     if(shootTimer.milliseconds() < 200){
                         intake.setPower(1);
-                    } else if(200 < shootTimer.milliseconds() && shootTimer.milliseconds() < 400){
+                    } else if(200 < shootTimer.milliseconds() && shootTimer.milliseconds() < 2000){
                         intake.setPower(0);
                         artifactCount -= 1;
-                    } else if(400 < shootTimer.milliseconds()){
+                    } else if(2000 < shootTimer.milliseconds()){
                         shootTimer.reset();
                         if(artifactCount <= 0){
                             isShooting = false;
@@ -233,6 +242,9 @@ public class newRobotRed extends LinearOpMode {
 
             if(gamepad1.dpad_left){
                 gate.setPosition(90);
+            }
+            else if(gamepad1.dpad_right){
+                gate.setPosition(180);
             }
 
             //FIELD CENTRIC
@@ -318,6 +330,8 @@ public class newRobotRed extends LinearOpMode {
             telemetry.addData("Y position", yPos);
             telemetry.addData("Heading (Z)", heading);
 
+            telemetry.addData("Flywheel Testing Velocity", flywheelTestingVelocity);
+
             telemetry.update();
 
             //Tells it to update the field view
@@ -397,6 +411,7 @@ public class newRobotRed extends LinearOpMode {
     }
 
     public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew){
+
         double p = distNew * proportion;
 
         double i = (tNew-tOld)*((distOld+distNew)/2);
