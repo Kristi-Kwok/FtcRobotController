@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 @Autonomous
 public class redbottom extends LinearOpMode {
     double flywheelVel = 0;
-    double targetFlywheelVel = 1600;
+    double targetFlywheelVel = 1700;
     DcMotor frontleft;
     DcMotor frontright;
     DcMotor backleft;
@@ -61,18 +61,16 @@ public class redbottom extends LinearOpMode {
         waitForStart();
 
 
-        move(0,1,800, 0.5);
-        sleep(800);
-        rotate(1, 100);
-        sleep(100);
-        move(0,1,500, 0.25);
-        sleep(500);
+        sleep(10000);
+        move(1,0,1500, 1);
+        sleep(1500);
+        move(1,0,50, 0.25);
+        sleep(50);
+        move(0,1,300, 0.25);
+        sleep(300);
+        sleep(7000);
         shoot();
         sleep(300);
-        move(0, -1, 175, 0.75);
-        sleep(175);
-        move(1, 0, 175, 0.75);
-        sleep(175);
     }
     //Move in a certain direction for a certain amount of time
     //Make sure x + y = 1

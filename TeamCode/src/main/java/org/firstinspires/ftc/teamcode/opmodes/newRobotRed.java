@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -10,8 +10,7 @@ import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -31,7 +30,7 @@ public class newRobotRed extends LinearOpMode {
     double angleToTarget;
     double xPos;
     double yPos;
-    CRServo backWheel;
+    Servo gate;
     int artifactCount;
     ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
@@ -46,7 +45,7 @@ public class newRobotRed extends LinearOpMode {
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
         DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        backWheel = hardwareMap.get(CRServo.class, "backWheel");
+        gate = hardwareMap.get(Servo.class, "gate");
         IMU imu = hardwareMap.get(IMU.class, "imu");
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -58,7 +57,8 @@ public class newRobotRed extends LinearOpMode {
 
 
         // You don't HAVE to do this, but it makes things clear
-        frontleft.setDirection(DcMotor.Direction.REVERSE );
+        intake.setDirection(DcMotor.Direction.REVERSE);
+        frontleft.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.REVERSE);
         backleft.setDirection(DcMotor.Direction.REVERSE);
         backright.setDirection(DcMotor.Direction.REVERSE);
@@ -125,23 +125,13 @@ public class newRobotRed extends LinearOpMode {
                 }
             }
 
-            //testing servo, we don't need these controls in-game
-            if(gamepad1.dpad_up){
-                backWheel.setPower(1);
-            } else if(gamepad1.dpad_down){
-                backWheel.setPower(-1);
-            } else {
-                backWheel.setPower(0);
-            }
 
             //intake
             if(gamepad1.b){
                 intake.setPower(-1);
-                backWheel.setPower(-1);
             } else if(y <  Math.abs(x) || gamepad1.x){
                 if(artifactCount != 3){
                     intake.setPower(1);
-                    backWheel.setPower(-0.5);
                 }
             }else{
                 intake.setPower(0);
@@ -212,10 +202,8 @@ public class newRobotRed extends LinearOpMode {
                 if (isShooting) {
                     //megabrake?
                     if(shootTimer.milliseconds() < 200){
-                        backWheel.setPower(1);
                         intake.setPower(1);
                     } else if(200 < shootTimer.milliseconds() && shootTimer.milliseconds() < 400){
-                        backWheel.setPower(0);
                         intake.setPower(0);
                         artifactCount -= 1;
                     } else if(400 < shootTimer.milliseconds()){
@@ -231,16 +219,20 @@ public class newRobotRed extends LinearOpMode {
             }
 
             //offwall sorting
+            //if(gamepad1.dpad_left){
+            //    if(xPos > 0){
+            //        double xDist = 58.5 - xPos;
+            //        x = xDist;
+            //        double rotDist = -90 - heading;
+            //        rot = rotDist/5;
+            //    }else{
+
+            //    }
+
+            //}
+
             if(gamepad1.dpad_left){
-                if(xPos > 0){
-                    double xDist = 58.5 - xPos;
-                    x = xDist;
-                    double rotDist = -90 - heading;
-                    rot = rotDist/5;
-                }else{
-
-                }
-
+                gate.setPosition(90);
             }
 
             //FIELD CENTRIC
@@ -326,8 +318,6 @@ public class newRobotRed extends LinearOpMode {
             telemetry.addData("Y position", yPos);
             telemetry.addData("Heading (Z)", heading);
 
-            telemetry.addData("backWheel", backWheel.getConnectionInfo());
-            telemetry.addData("backWheel", backWheel.getPower());
             telemetry.update();
 
             //Tells it to update the field view
@@ -404,5 +394,16 @@ public class newRobotRed extends LinearOpMode {
         fieldOverlay.strokeLine(x, y, -70, 70); //draw shot distance line
 
         dashboard.sendTelemetryPacket(packet);
+    }
+
+    public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew){
+        double p = distNew * proportion;
+
+        double i = (tNew-tOld)*((distOld+distNew)/2);
+
+        double vel = (distNew - distOld)/(tNew - tOld);
+        double d = -dampening * vel;
+
+        return p * proportion + d * dampening + i * integral;
     }
 }
