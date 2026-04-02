@@ -36,6 +36,9 @@ public class newRobotRed extends LinearOpMode {
     ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     boolean isShooting;
     int flywheelTestingVelocity = 1000;
+    boolean GateOpen = false;
+    double oldRot = 0;
+    double oldTime = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -74,7 +77,7 @@ public class newRobotRed extends LinearOpMode {
 
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
-                RevHubOrientationOnRobot.UsbFacingDirection.DOWN);
+                RevHubOrientationOnRobot.UsbFacingDirection.UP);
 
         IMU.Parameters parameters = new IMU.Parameters(orientation);
         imu.initialize(parameters);
@@ -164,6 +167,7 @@ public class newRobotRed extends LinearOpMode {
 
                 xPos = result.getBotpose().getPosition().x * 39.37;
                 yPos = result.getBotpose().getPosition().y * 39.37;
+                double llRot = result.getBotpose().getOrientation().getYaw();
 
 
                 double targetX = -70;
@@ -174,7 +178,8 @@ public class newRobotRed extends LinearOpMode {
 
                 distToTarget = Math.sqrt((xDistToCorner * xDistToCorner) + (yDistToCorner * yDistToCorner));
                 angleFromFlatToTarget = Math.toDegrees(Math.atan2(xDistToCorner, yDistToCorner));
-                angleToTarget = angleFromFlatToTarget - (heading - 90);
+                angleToTarget = angleFromFlatToTarget - (heading);
+                telemetry.addData("Angle From Flat", angleFromFlatToTarget);
 
                 isTargeting = true;
 
@@ -201,7 +206,7 @@ public class newRobotRed extends LinearOpMode {
 
             if(gamepad1.right_bumper){
                 targetFlywheelVel = flywheelTestingVelocity;
-                rot = angleToTarget / 5;
+                rot = pid(10, 3 , 0.00005, oldRot, oldTime, heading, runtime.milliseconds());
 
                 if(Math.abs(angleToTarget) < 1 && !isShooting){
                     isShooting = true;
@@ -240,11 +245,15 @@ public class newRobotRed extends LinearOpMode {
 
             //}
 
+
+
             if(gamepad1.dpad_left){
-                gate.setPosition(90);
+                GateOpen = true;
+                gate.setPosition(0.15);
             }
             else if(gamepad1.dpad_right){
-                gate.setPosition(180);
+                GateOpen = false;
+                gate.setPosition(0.35);
             }
 
             //FIELD CENTRIC
@@ -367,6 +376,9 @@ public class newRobotRed extends LinearOpMode {
             frontright.setPower(rightfrontPower);
             backleft.setPower(leftbackPower);
             backright.setPower(rightbackPower);
+
+            oldRot = heading;
+            oldTime = runtime.milliseconds();
         }
     }
 
