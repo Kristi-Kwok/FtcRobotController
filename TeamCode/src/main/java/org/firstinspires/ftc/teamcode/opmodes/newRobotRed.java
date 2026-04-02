@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.HardwareCode.PIDConfig;
+import org.firstinspires.ftc.teamcode.HardwareCode.PIDConfig;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -39,6 +41,12 @@ public class newRobotRed extends LinearOpMode {
     boolean GateOpen = false;
     double oldRot = 0;
     double oldTime = 0;
+    double[] stepSizes = {0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001};
+    //Index to select the current step size from the array
+    int stepIndex = 2;
+
+    double KpPower;
+    double KdPower;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -89,6 +97,8 @@ public class newRobotRed extends LinearOpMode {
         waitForStart();
 
         runtime.reset();
+
+
 
 
         while (opModeIsActive()) {
@@ -204,9 +214,37 @@ public class newRobotRed extends LinearOpMode {
 
             //actually shooting
 
+            PIDConfig KpPower = new PIDConfig(0.5, 0, 0);
+
+            PIDConfig KdPower = new PIDConfig(0.5, 0, 0);
+
+            //'B' cycles through the different step sizes for tuning percision
+            if (gamepad2.bWasPressed()) {
+                stepIndex = (stepIndex +1) % stepSizes.length; //Modulo wraps the index back to 0
+            }
+
+            //Used gamepad2 to not override any of the controls already stated
+            //You may still need to test it but you can change the P and D while running the opmode
+            if (gamepad2.dpadLeftWasPressed()) {
+                KpPower.setkP(KpPower.getkP() - stepSizes[stepIndex]);
+            }
+
+            if (gamepad2.dpadRightWasPressed()) {
+                KpPower.setkP(KpPower.getkP() + stepSizes[stepIndex]);
+            }
+
+            // D-pad up/down adjust the D gain
+            if (gamepad2.dpadUpWasPressed()) {
+                KdPower.setkD(KdPower.getkD() + stepSizes[stepIndex]);
+            }
+
+            if (gamepad2.dpadDownWasPressed()) {
+                KdPower.setkD(KdPower.getkD() - stepSizes[stepIndex]);
+            }
+
             if(gamepad1.right_bumper){
                 targetFlywheelVel = flywheelTestingVelocity;
-                rot = pid(10, 3 , 0.00005, oldRot, oldTime, heading, runtime.milliseconds());
+                rot = pid(KpPower, 3 ,KdPower, oldRot, oldTime, heading, runtime.milliseconds());
 
                 if(Math.abs(angleToTarget) < 1 && !isShooting){
                     isShooting = true;
@@ -341,6 +379,10 @@ public class newRobotRed extends LinearOpMode {
 
             telemetry.addData("Flywheel Testing Velocity", flywheelTestingVelocity);
 
+            telemetry.addData("Tuning P", "%.7f (D-Pad L/R)", KpPower.getkP());
+            telemetry.addData("Tuning D", "%.7f (D-Pad U/D", KdPower.getkD());
+            telemetry.addData("Step Size", "%.7f (B button)", stepSizes[stepIndex]);
+
             telemetry.update();
 
             //Tells it to update the field view
@@ -422,15 +464,15 @@ public class newRobotRed extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
     }
 
-    public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew){
+    public double pid(PIDConfig proportion, double integral, PIDConfig dampening, double distOld, double tOld, double distNew, double tNew){
 
-        double p = distNew * proportion;
+        double p = distNew * proportion.getkP();
 
         double i = (tNew-tOld)*((distOld+distNew)/2);
 
         double vel = (distNew - distOld)/(tNew - tOld);
-        double d = -dampening * vel;
+        double d = -vel * dampening.getkP();
 
-        return p * proportion + d * dampening + i * integral;
+        return p + (i * integral) + d;
     }
 }
