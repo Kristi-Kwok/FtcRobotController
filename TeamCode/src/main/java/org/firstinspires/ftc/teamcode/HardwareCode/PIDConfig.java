@@ -13,11 +13,19 @@ public class PIDConfig {
         this.kD = kD;
     }
     public void setkP(double newKP) {
-        kP = kP;
+        kP = newKP;
     }
 
     public double getkP() {
         return kP;
+    }
+
+    public void setkI(double newKI) {
+        kI = newKI;
+    }
+
+    public double getkI() {
+        return kI;
     }
 
     public void setkD(double newKD) {

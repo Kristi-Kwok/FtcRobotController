@@ -44,9 +44,7 @@ public class newRobotRed extends LinearOpMode {
     double[] stepSizes = {0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001};
     //Index to select the current step size from the array
     int stepIndex = 2;
-
-    double KpPower;
-    double KdPower;
+    PIDConfig RotPID = new PIDConfig(0.5, 0, 0);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -116,7 +114,6 @@ public class newRobotRed extends LinearOpMode {
                 rotOffset = 0;
             }
 
-
             if (gamepad1.yWasPressed() || gamepad1.leftStickButtonWasPressed()) {
                 if (moveSpeed == 1) {
                     moveSpeed = 0.2;
@@ -125,7 +122,6 @@ public class newRobotRed extends LinearOpMode {
                 }
             }
 
-
             double x = gamepad1.left_stick_x;
             double y = gamepad1.left_stick_y;
             double rot = gamepad1.right_stick_x;
@@ -133,7 +129,6 @@ public class newRobotRed extends LinearOpMode {
             double moveAmnt = (Math.abs(x) + Math.abs(y)) * moveSpeed;
 
             flywheelVel = flywheel.getVelocity();
-
 
 
             //keep track of how many artifacts we have
@@ -148,7 +143,8 @@ public class newRobotRed extends LinearOpMode {
             }
 
 
-            //intake
+    //      ---------------------intake---------------------
+
             if(gamepad1.b){
                 intake.setPower(-1);
             } else if(y <  Math.abs(x) || gamepad1.x){
@@ -161,19 +157,19 @@ public class newRobotRed extends LinearOpMode {
 
 
 
-            //LIMELIGHT AIMING
+//------------------------LIMELIGHT AIMING------------------------
 
             limelight.updateRobotOrientation(heading + 90);
 
             LLResult result = limelight.getLatestResult();
             if (result != null && result.isValid()) {
 
-
+                //more accurate, but need accurate heading
 
                 //xPos = result.getBotpose_MT2().getPosition().x * 39.37;
                 //yPos = result.getBotpose_MT2().getPosition().y * 39.37;
 
-                //testing
+
 
                 xPos = result.getBotpose().getPosition().x * 39.37;
                 yPos = result.getBotpose().getPosition().y * 39.37;
@@ -200,7 +196,7 @@ public class newRobotRed extends LinearOpMode {
             }
 
 
-            //This calcs how much power to use
+    //      ---------------------flywheel power calculations---------------------
 
             double height = 10;
             double targetHeight = 40;
@@ -212,13 +208,11 @@ public class newRobotRed extends LinearOpMode {
             double velModifier = -(distToTarget*distToTarget)/((targetHeight - height - distToTarget) * 2.0);
             double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
 
-            //actually shooting
+    //      ---------------------modifying rotation PID at runtime---------------------
 
-            PIDConfig KpPower = new PIDConfig(0.5, 0, 0);
 
-            PIDConfig KdPower = new PIDConfig(0.5, 0, 0);
 
-            //'B' cycles through the different step sizes for tuning percision
+            //'B' cycles through the different step sizes for tuning precision
             if (gamepad2.bWasPressed()) {
                 stepIndex = (stepIndex +1) % stepSizes.length; //Modulo wraps the index back to 0
             }
@@ -226,25 +220,27 @@ public class newRobotRed extends LinearOpMode {
             //Used gamepad2 to not override any of the controls already stated
             //You may still need to test it but you can change the P and D while running the opmode
             if (gamepad2.dpadLeftWasPressed()) {
-                KpPower.setkP(KpPower.getkP() - stepSizes[stepIndex]);
+                RotPID.setkP(RotPID.getkP() - stepSizes[stepIndex]);
             }
 
             if (gamepad2.dpadRightWasPressed()) {
-                KpPower.setkP(KpPower.getkP() + stepSizes[stepIndex]);
+                RotPID.setkP(RotPID.getkP() + stepSizes[stepIndex]);
             }
 
             // D-pad up/down adjust the D gain
             if (gamepad2.dpadUpWasPressed()) {
-                KdPower.setkD(KdPower.getkD() + stepSizes[stepIndex]);
+                RotPID.setkD(RotPID.getkD() + stepSizes[stepIndex]);
             }
 
             if (gamepad2.dpadDownWasPressed()) {
-                KdPower.setkD(KdPower.getkD() - stepSizes[stepIndex]);
+                RotPID.setkD(RotPID.getkD() - stepSizes[stepIndex]);
             }
+
+    //      ---------------------actually shooting---------------------
 
             if(gamepad1.right_bumper){
                 targetFlywheelVel = flywheelTestingVelocity;
-                rot = pid(KpPower, 3 ,KdPower, oldRot, oldTime, heading, runtime.milliseconds());
+                rot = pid(RotPID.getkP(), 3, RotPID.getkD(), oldRot, oldTime, angleToTarget, runtime.milliseconds());
 
                 if(Math.abs(angleToTarget) < 1 && !isShooting){
                     isShooting = true;
@@ -278,9 +274,9 @@ public class newRobotRed extends LinearOpMode {
             //        double rotDist = -90 - heading;
             //        rot = rotDist/5;
             //    }else{
-
+            //
             //    }
-
+            //
             //}
 
 
@@ -294,7 +290,8 @@ public class newRobotRed extends LinearOpMode {
                 gate.setPosition(0.35);
             }
 
-            //FIELD CENTRIC
+    //      ---------------------field centric---------------------
+    //      (should prob put in a mecanum general class)
 
             double weight = 0;
             int xPolarity = 0;
@@ -363,11 +360,11 @@ public class newRobotRed extends LinearOpMode {
                 y = 0;
             }
 
-
-
             x *= moveAmnt;
             y *= moveAmnt;
             rot *= moveSpeed;
+
+    //      ----------------------telemetry--------------------
 
             telemetry.addData("Corner Distance", distToTarget);
             telemetry.addData("Angle To Corner", angleToTarget);
@@ -379,8 +376,8 @@ public class newRobotRed extends LinearOpMode {
 
             telemetry.addData("Flywheel Testing Velocity", flywheelTestingVelocity);
 
-            telemetry.addData("Tuning P", "%.7f (D-Pad L/R)", KpPower.getkP());
-            telemetry.addData("Tuning D", "%.7f (D-Pad U/D", KdPower.getkD());
+            telemetry.addData("Tuning P", "%.7f (D-Pad L/R)", RotPID.getkP());
+            telemetry.addData("Tuning D", "%.7f (D-Pad U/D", RotPID.getkD());
             telemetry.addData("Step Size", "%.7f (B button)", stepSizes[stepIndex]);
 
             telemetry.update();
@@ -388,7 +385,9 @@ public class newRobotRed extends LinearOpMode {
             //Tells it to update the field view
             drawRobot(xPos, yPos, heading);
 
-            //actually sets the power of the motor
+
+
+    //      ---------------------assign flywheel velocity---------------------
             if (!gamepad1.b) {
                 double slowThreshold = 2;
                 double motorSpeedTowardsTarget;
@@ -407,7 +406,7 @@ public class newRobotRed extends LinearOpMode {
                 }
             }
 
-            //assign power to motors
+    //      ---------------------assign power to drivetrain motors---------------------
 
             double leftfrontPower = y - x - rot;
             double rightfrontPower = y + x + rot;
@@ -419,7 +418,10 @@ public class newRobotRed extends LinearOpMode {
             backleft.setPower(leftbackPower);
             backright.setPower(rightbackPower);
 
-            oldRot = heading;
+
+
+            //remember last frame's values for pid
+            oldRot = angleToTarget;
             oldTime = runtime.milliseconds();
         }
     }
@@ -464,14 +466,14 @@ public class newRobotRed extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
     }
 
-    public double pid(PIDConfig proportion, double integral, PIDConfig dampening, double distOld, double tOld, double distNew, double tNew){
+    public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew){
 
-        double p = distNew * proportion.getkP();
+        double p = distNew * proportion;
 
         double i = (tNew-tOld)*((distOld+distNew)/2);
 
         double vel = (distNew - distOld)/(tNew - tOld);
-        double d = -vel * dampening.getkP();
+        double d = -vel * dampening;
 
         return p + (i * integral) + d;
     }
