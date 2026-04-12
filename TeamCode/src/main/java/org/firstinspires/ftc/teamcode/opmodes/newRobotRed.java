@@ -11,15 +11,16 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.HardwareCode.PIDConfig;
-import org.firstinspires.ftc.teamcode.HardwareCode.PIDConfig;
-
 import com.acmerobotics.dashboard.FtcDashboard;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name = "newRobotRed")
+@Config
 public class newRobotRed extends LinearOpMode {
     double rotOffset = 0;
     double moveSpeed = 1;
@@ -37,14 +38,20 @@ public class newRobotRed extends LinearOpMode {
     ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     ElapsedTime shootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     boolean isShooting;
-    int flywheelTestingVelocity = 1000;
+    public static int flywheelTestingVelocity = 1420;
     boolean GateOpen = false;
     double oldRot = 0;
     double oldTime = 0;
+    double oldFlywheelDist = 0;
     double[] stepSizes = {0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001};
     //Index to select the current step size from the array
     int stepIndex = 2;
+    public static double r_kD = 0.006, r_kI, r_kP = .03;
+    public static double f_kD = 0.002, f_kI = 0.000001, f_kP = .008;
     PIDConfig RotPID = new PIDConfig(0.5, 0, 0);
+    Telemetry dashboardTelemetry  = FtcDashboard.getInstance().getTelemetry();
+    double r_integralSum, f_integralSum = 0;
+    boolean wasSpinning = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -147,7 +154,7 @@ public class newRobotRed extends LinearOpMode {
 
             if(gamepad1.b){
                 intake.setPower(-1);
-            } else if(y <  Math.abs(x) || gamepad1.x){
+            } else if(gamepad1.x){
                 if(artifactCount != 3){
                     intake.setPower(1);
                 }
@@ -159,21 +166,21 @@ public class newRobotRed extends LinearOpMode {
 
 //------------------------LIMELIGHT AIMING------------------------
 
-            limelight.updateRobotOrientation(heading + 90);
+            limelight.updateRobotOrientation(heading+90);
 
             LLResult result = limelight.getLatestResult();
             if (result != null && result.isValid()) {
 
-                //more accurate, but need accurate heading
 
-                //xPos = result.getBotpose_MT2().getPosition().x * 39.37;
-                //yPos = result.getBotpose_MT2().getPosition().y * 39.37;
+                xPos = result.getBotpose_MT2().getPosition().x * 39.37;
+                yPos = result.getBotpose_MT2().getPosition().y * 39.37;
+                double llRot = result.getBotpose_MT2().getOrientation().getYaw();
 
 
 
-                xPos = result.getBotpose().getPosition().x * 39.37;
-                yPos = result.getBotpose().getPosition().y * 39.37;
-                double llRot = result.getBotpose().getOrientation().getYaw();
+                //xPos = result.getBotpose().getPosition().x * 39.37;
+                //yPos = result.getBotpose().getPosition().y * 39.37;
+                //double llRot = result.getBotpose().getOrientation().getYaw();
 
 
                 double targetX = -70;
@@ -184,7 +191,7 @@ public class newRobotRed extends LinearOpMode {
 
                 distToTarget = Math.sqrt((xDistToCorner * xDistToCorner) + (yDistToCorner * yDistToCorner));
                 angleFromFlatToTarget = Math.toDegrees(Math.atan2(xDistToCorner, yDistToCorner));
-                angleToTarget = angleFromFlatToTarget - (heading);
+                angleToTarget = -(angleFromFlatToTarget - (heading));
                 telemetry.addData("Angle From Flat", angleFromFlatToTarget);
 
                 isTargeting = true;
@@ -198,22 +205,22 @@ public class newRobotRed extends LinearOpMode {
 
     //      ---------------------flywheel power calculations---------------------
 
-            double height = 10;
+            double height = 16.5;
             double targetHeight = 40;
 
             //testing values, we need to test
-            double flywheelVelPerDist = 1000; //Flywheel velocity for when target is 100 in away, constant
+            double flywheelVelPerDist = flywheelTestingVelocity; //Flywheel velocity for when target is 100 in away, constant
             double velModifier_perDist = 71.4285714286; //velModifier for when target is 100 in away, constant (calc in desmos)
 
             double velModifier = -(distToTarget*distToTarget)/((targetHeight - height - distToTarget) * 2.0);
             double neededVelocity = flywheelVelPerDist * (velModifier / velModifier_perDist);
 
-    //      ---------------------modifying rotation PID at runtime---------------------
+    //      ---------------------modifying rotation PID at runtime (only for driver hub control)---------------------
 
 
 
             //'B' cycles through the different step sizes for tuning precision
-            if (gamepad2.bWasPressed()) {
+            if (gamepad2.aWasPressed()) {
                 stepIndex = (stepIndex +1) % stepSizes.length; //Modulo wraps the index back to 0
             }
 
@@ -236,34 +243,58 @@ public class newRobotRed extends LinearOpMode {
                 RotPID.setkD(RotPID.getkD() - stepSizes[stepIndex]);
             }
 
+            // D-pad up/down adjust the D gain
+            if (gamepad2.xWasPressed()) {
+                RotPID.setkI(RotPID.getkI() + stepSizes[stepIndex]);
+            }
+
+            if (gamepad2.yWasPressed()) {
+                RotPID.setkI(RotPID.getkI() - stepSizes[stepIndex]);
+            }
+
     //      ---------------------actually shooting---------------------
 
-            if(gamepad1.right_bumper){
+            if(gamepad1.left_bumper){
                 targetFlywheelVel = flywheelTestingVelocity;
-                rot = pid(RotPID.getkP(), 3, RotPID.getkD(), oldRot, oldTime, angleToTarget, runtime.milliseconds());
+            } else {
+                targetFlywheelVel = 0;
+            }
 
-                if(Math.abs(angleToTarget) < 1 && !isShooting){
+            if(gamepad1.right_bumper){
+                if(isTargeting){
+                    rot = pid(r_kP, r_kI, r_kD, oldRot, oldTime, angleToTarget, runtime.milliseconds(), "r");
+                } else {
+                    if (heading < -125 || heading > 55) {
+                        rot = 0.5;
+                    }else if(heading > 54 && heading < 55){
+                        rot = 0;
+                    }else {
+                        rot = -0.5;
+                    }
+
+                    r_integralSum = 0;
+                }
+
+                targetFlywheelVel = flywheelTestingVelocity;
+                GateOpen = true;
+
+
+                if(Math.abs(angleToTarget) < 3.5 && !isShooting && Math.abs(targetFlywheelVel - flywheelVel) <= 20){
                     isShooting = true;
                     shootTimer.reset();
                 }
 
                 if (isShooting) {
-                    //megabrake?
-                    if(shootTimer.milliseconds() < 200){
-                        intake.setPower(1);
-                    } else if(200 < shootTimer.milliseconds() && shootTimer.milliseconds() < 2000){
-                        intake.setPower(0);
-                        artifactCount -= 1;
-                    } else if(2000 < shootTimer.milliseconds()){
-                        shootTimer.reset();
-                        if(artifactCount <= 0){
-                            isShooting = false;
-                        }
+                    intake.setPower(1);
+                    if(shootTimer.milliseconds() > 130){
+                        targetFlywheelVel += 5;
                     }
                 }
             } else {
-                //targetFlywheelVel = 0;
+                targetFlywheelVel = 0;
                 isShooting = false;
+                r_integralSum = 0;
+                GateOpen = false;
             }
 
             //offwall sorting
@@ -283,11 +314,15 @@ public class newRobotRed extends LinearOpMode {
 
             if(gamepad1.dpad_left){
                 GateOpen = true;
-                gate.setPosition(0.15);
             }
             else if(gamepad1.dpad_right){
                 GateOpen = false;
+            }
+
+            if(GateOpen){
                 gate.setPosition(0.35);
+            } else {
+                gate.setPosition(0.15);
             }
 
     //      ---------------------field centric---------------------
@@ -366,6 +401,7 @@ public class newRobotRed extends LinearOpMode {
 
     //      ----------------------telemetry--------------------
 
+
             telemetry.addData("Corner Distance", distToTarget);
             telemetry.addData("Angle To Corner", angleToTarget);
             telemetry.addData("Needed Velocity", neededVelocity);
@@ -377,18 +413,35 @@ public class newRobotRed extends LinearOpMode {
             telemetry.addData("Flywheel Testing Velocity", flywheelTestingVelocity);
 
             telemetry.addData("Tuning P", "%.7f (D-Pad L/R)", RotPID.getkP());
-            telemetry.addData("Tuning D", "%.7f (D-Pad U/D", RotPID.getkD());
-            telemetry.addData("Step Size", "%.7f (B button)", stepSizes[stepIndex]);
+            telemetry.addData("Tuning D", "%.7f (D-Pad U/D)", RotPID.getkD());
+            telemetry.addData("Tuning I", "%.7f (X/Y)", RotPID.getkI());
+            telemetry.addData("Step Size", "%.7f (A button)", stepSizes[stepIndex]);
 
             telemetry.update();
 
+            //dashboard telemetry
+            if(true){
+                dashboardTelemetry.addData("Corner Distance", distToTarget);
+                dashboardTelemetry.addData("Angle To Corner", Math.abs(angleToTarget));
+                dashboardTelemetry.addData("Needed Velocity", neededVelocity);
+
+                dashboardTelemetry.addData("Heading (Z)", heading);
+
+                dashboardTelemetry.addData("Target Flywheel Vel", targetFlywheelVel);
+                dashboardTelemetry.addData("Actual Flywheel Velocity", flywheel.getVelocity());
+
+
+
+                dashboardTelemetry.update();
+
+            }
             //Tells it to update the field view
             drawRobot(xPos, yPos, heading);
 
 
 
     //      ---------------------assign flywheel velocity---------------------
-            if (!gamepad1.b) {
+            if (!gamepad1.b && false) {
                 double slowThreshold = 2;
                 double motorSpeedTowardsTarget;
                 if (flywheelVel < targetFlywheelVel) {
@@ -406,6 +459,12 @@ public class newRobotRed extends LinearOpMode {
                 }
             }
 
+            if(targetFlywheelVel != 0) {
+                flywheel.setPower(Math.max(pid(f_kP, f_kI, f_kD, oldFlywheelDist, oldTime, targetFlywheelVel - flywheelVel, runtime.milliseconds(), "f"), -0.5));
+            } else {
+                f_integralSum = 0;
+                flywheel.setPower(0);
+            }
     //      ---------------------assign power to drivetrain motors---------------------
 
             double leftfrontPower = y - x - rot;
@@ -423,6 +482,7 @@ public class newRobotRed extends LinearOpMode {
             //remember last frame's values for pid
             oldRot = angleToTarget;
             oldTime = runtime.milliseconds();
+            oldFlywheelDist = targetFlywheelVel - flywheelVel;
         }
     }
 
@@ -466,15 +526,25 @@ public class newRobotRed extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
     }
 
-    public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew){
+    public double pid(double proportion, double integral, double dampening, double distOld, double tOld, double distNew, double tNew, String letterCode){
 
         double p = distNew * proportion;
 
-        double i = (tNew-tOld)*((distOld+distNew)/2);
+        double i = 0;
+
+        if(letterCode == "r"){
+            r_integralSum += (tNew-tOld)*((distOld+distNew)/2);
+            i = r_integralSum * integral;
+        }
+        else if(letterCode == "f"){
+            f_integralSum += (tNew-tOld)*((distOld+distNew)/2);
+            i = f_integralSum * integral;
+        }
+
 
         double vel = (distNew - distOld)/(tNew - tOld);
         double d = -vel * dampening;
 
-        return p + (i * integral) + d;
+        return p + i + d;
     }
 }
