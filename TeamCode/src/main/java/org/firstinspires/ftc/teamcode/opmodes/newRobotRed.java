@@ -17,6 +17,15 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import java.io.FileOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.File;
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import android.os.Environment;
+
 
 
 @TeleOp(name = "newRobotRed")
@@ -51,7 +60,8 @@ public class newRobotRed extends LinearOpMode {
     PIDConfig RotPID = new PIDConfig(0.5, 0, 0);
     Telemetry dashboardTelemetry  = FtcDashboard.getInstance().getTelemetry();
     double r_integralSum, f_integralSum = 0;
-    boolean wasSpinning = false;
+    int lastFileSaved = 0;
+    int downloadFrameCountdown = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -104,8 +114,6 @@ public class newRobotRed extends LinearOpMode {
         runtime.reset();
 
 
-
-
         while (opModeIsActive()) {
 
             double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
@@ -127,6 +135,18 @@ public class newRobotRed extends LinearOpMode {
                 } else {
                     moveSpeed = 1;
                 }
+            }
+
+            if(downloadFrameCountdown > 0){
+                if(downloadFrameCountdown == 1){
+                    downloadSnapshot();
+                }
+                downloadFrameCountdown--;
+            }
+
+            if(gamepad2.rightBumperWasPressed() && !gamepad1.right_bumper){
+                limelight.captureSnapshot("snapshot");
+                downloadFrameCountdown = 9;
             }
 
             double x = gamepad1.left_stick_x;
@@ -430,6 +450,8 @@ public class newRobotRed extends LinearOpMode {
                 dashboardTelemetry.addData("Target Flywheel Vel", targetFlywheelVel);
                 dashboardTelemetry.addData("Actual Flywheel Velocity", flywheel.getVelocity());
 
+                dashboardTelemetry.addData("Last Snapshot Save #", lastFileSaved);
+
 
 
                 dashboardTelemetry.update();
@@ -546,5 +568,67 @@ public class newRobotRed extends LinearOpMode {
         double d = -vel * dampening;
 
         return p + i + d;
+    }
+
+
+    public void downloadSnapshot() { //downloads most recent limelight snapshot into microSD in CH
+        try {
+            //reads the filenames
+            URL fileNamesUrl = new URL("http://172.29.0.1:5801/snapshots/snapshotmanifest.txt");
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(fileNamesUrl.openStream())
+            );
+
+            StringBuilder content = new StringBuilder();
+            String line;
+
+            //cycle through filenames (stored in string)
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+            }
+
+            reader.close();
+
+            //isolate last file
+            String result = content.toString();
+
+            result = result.replace("[", "")
+                    .replace("]", "")
+                    .replace("\"", "");
+
+            String[] parts = result.split(",");
+
+            String last = parts[parts.length - 1];
+            dashboardTelemetry.addLine(last);
+
+            URL url = new URL("http://172.29.0.1:5801/snapshots/min_" + last);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.connect();
+
+            InputStream input = connection.getInputStream();
+
+            lastFileSaved++;
+             File file = new File(Environment.getExternalStorageDirectory().getPath(), "FIRST/snapshots/snapshot" + String.valueOf(lastFileSaved) + ".png");
+
+             FileOutputStream output = new FileOutputStream(file);
+
+             byte[] buffer = new byte[4096];
+             int bytesRead;
+
+             while ((bytesRead = input.read(buffer)) != -1) {
+                 output.write(buffer, 0, bytesRead);
+             }
+
+             output.close();
+             input.close();
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            dashboardTelemetry.addLine("ERROR: " + e.toString());
+        }
     }
 }
