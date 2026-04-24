@@ -70,6 +70,7 @@ public class newRobotRed extends LinearOpMode {
         DcMotor backleft = hardwareMap.get(DcMotor.class, "backleft");
         DcMotor backright = hardwareMap.get(DcMotor.class, "backright");
         DcMotor intake = hardwareMap.get(DcMotor.class, "intake");
+        DcMotor transfer = hardwareMap.get(DcMotor.class, "transfer");
         DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         gate = hardwareMap.get(Servo.class, "gate");
@@ -84,7 +85,7 @@ public class newRobotRed extends LinearOpMode {
 
 
         // You don't HAVE to do this, but it makes things clear
-        intake.setDirection(DcMotor.Direction.REVERSE);
+        transfer.setDirection(DcMotor.Direction.REVERSE);
         frontleft.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.REVERSE);
         backleft.setDirection(DcMotor.Direction.REVERSE);
@@ -97,6 +98,7 @@ public class newRobotRed extends LinearOpMode {
         backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        transfer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         ImuOrientationOnRobot orientation = new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
@@ -174,12 +176,15 @@ public class newRobotRed extends LinearOpMode {
 
             if(gamepad1.b){
                 intake.setPower(-1);
+                transfer.setPower(-1);
             } else if(gamepad1.x){
                 if(artifactCount != 3){
                     intake.setPower(1);
+                    transfer.setPower(1);
                 }
             }else{
                 intake.setPower(0);
+                transfer.setPower(0);
             }
 
 
